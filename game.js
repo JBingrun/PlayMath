@@ -35,12 +35,11 @@ function makeProblem() {
   const a = rand(2, 9);
   const b = rand(2, 9);
   const product = a * b;
-  const cMulti = Math.random() < 0.6;
   let c, sign, ans, text;
 
   if (Math.random() < 0.5) {
     sign = "+";
-    c = cMulti ? rand(10, 40) : rand(2, 9);
+    c = rand(2, 10);
     ans = product + c;
     text = pick([
       `🍩 烘焙坊一早做好 ${a} 盒甜甜圈，每盒裝 ${b} 個，老闆又從冰箱補了 ${c} 個剛炸好的。請問現在櫃台上總共有幾個甜甜圈？`,
@@ -52,9 +51,8 @@ function makeProblem() {
     ]);
   } else {
     sign = "−";
-    const maxC = Math.min(product - 1, cMulti ? 40 : 9);
-    const minC = cMulti && maxC >= 10 ? 10 : 1;
-    c = rand(Math.min(minC, maxC), maxC);
+    const maxC = Math.min(product - 1, 10);
+    c = rand(1, maxC);
     ans = product - c;
     text = pick([
       `🍰 蛋糕店一早烤好 ${a} 盤蛋糕，每盤 ${b} 個。中午被客人買走了 ${c} 個，請問櫃子裡還剩下幾個蛋糕？`,
@@ -485,11 +483,15 @@ function eraseSlot(slot) {
   const input = $("answer");
   if (input) { input.disabled = true; input.value = ""; }
 }
-document.addEventListener("click", (e) => {
+// 橡皮擦開啟時，算式格子內的 pointerdown 立即視為消除（拖動也算）
+document.addEventListener("pointerdown", (e) => {
   if (!eraserOn) return;
   const slot = e.target.closest("#equation .slot");
-  if (slot) eraseSlot(slot);
-});
+  if (!slot) return;
+  e.stopPropagation();
+  e.preventDefault();
+  if (slot.children.length) eraseSlot(slot);
+}, true);
 
 /* ========== 事件 ========== */
 $("eraserBtn").addEventListener("click", () => setEraser(!eraserOn));
