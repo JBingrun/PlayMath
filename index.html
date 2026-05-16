@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="數學拼圖" />
+<meta name="mobile-web-app-capable" content="yes" />
+<title>二步驟運算拼圖</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="game">
+    <h1>🧩 二步驟運算拼圖 🧮</h1>
+
+    <div class="stats">
+      <div>答對<span id="correctCount">0</span></div>
+      <div>答錯<span id="wrongCount">0</span></div>
+      <div>得分<span id="score">0</span></div>
+      <div>🔥連對<span id="streak">0</span></div>
+    </div>
+
+    <div class="layout">
+      <div class="col-left">
+        <div class="question-box">
+          <span class="label">題目</span><span id="questionText">準備好了嗎？</span>
+        </div>
+
+        <div class="section-title">① 把數字和符號拖到算式中：</div>
+        <div class="equation" id="equation"></div>
+
+        <div class="feedback" id="feedback"></div>
+      </div>
+
+      <div class="col-right">
+        <div class="section-title">② 組合方塊（組兩位數時把數字一個一個拖進來，再把整塊拖到算式裡）：</div>
+        <div class="combo-area" id="comboArea">
+          <span class="combo-label">組合方塊：</span>
+          <div class="combo-block empty" id="comboBlock" data-digits=""></div>
+          <button class="combo-clear" id="comboClear" title="清除">✕</button>
+        </div>
+
+        <div class="section-title">③ 數字拼塊（0～9 可重複使用）：</div>
+        <div class="tray digit-tray" id="digitTray"></div>
+
+        <div class="section-title">④ 運算符號（＋ − × ÷ 選對的拖過去）：</div>
+        <div class="tray op-tray" id="opTray"></div>
+
+        <div class="action-row">
+          <button class="eraser-btn" id="eraserBtn" title="點一下開啟，再點算式裡的格子可以清掉">🧽 橡皮擦</button>
+          <button class="btn secondary" id="resetBtn">重新開始</button>
+          <button class="btn primary" id="submitBtn">送出答案</button>
+          <button class="btn secondary" id="nextBtn">換一題</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="victory" id="victory">
+    <div class="victory-card">
+      <div class="victory-emoji">🎉</div>
+      <div class="victory-title">答對了！</div>
+      <div class="victory-sub" id="victorySub">很棒，你超厲害！</div>
+      <button class="victory-next" id="victoryNext">下一題 →</button>
+    </div>
+  </div>
+<script src="game.js" defer></script>
+</body>
+</html>
