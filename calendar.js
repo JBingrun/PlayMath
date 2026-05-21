@@ -91,5 +91,23 @@
     $("calNext").addEventListener("click", () => shiftMonth(1));
     $("calToday").addEventListener("click", goToday);
     $("menuCalendarBtn").addEventListener("click", openCalendar);
+
+    $("calExport").addEventListener("click", () => {
+      window.PracticeStore.exportJSON();
+    });
+    $("calImportFile").addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const merge = confirm("要合併現有紀錄嗎？\n\n按「確定」= 合併（兩邊資料相加）\n按「取消」= 覆蓋（清掉現有紀錄）");
+      try {
+        await window.PracticeStore.importJSON(file, { merge });
+        renderCalendar();
+        alert("✅ 匯入完成！");
+      } catch (err) {
+        alert("❌ 匯入失敗：" + err.message);
+      } finally {
+        e.target.value = "";
+      }
+    });
   });
 })();

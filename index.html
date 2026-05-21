@@ -8,12 +8,26 @@
 <meta name="apple-mobile-web-app-title" content="數學拼圖" />
 <meta name="mobile-web-app-capable" content="yes" />
 <title>數學拼圖</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="icon" type="image/png" href="icons/icon-192.png" />
+<meta name="theme-color" content="#ff6b9d" />
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- iOS 加到主畫面提示 -->
+  <div class="install-hint" id="installHint" hidden>
+    <div class="install-hint-text">
+      把這個 App 加到主畫面，使用更順手！<br>
+      點下方 <span class="ios-share">⬆︎</span> <b>分享</b> → <b>加入主畫面</b>
+    </div>
+    <button class="install-hint-close" id="installHintClose" title="關閉">✕</button>
+  </div>
+
   <!-- 選單頁 -->
   <div class="screen menu show" id="menuScreen">
     <div class="menu-card-wrap">
+      <button class="menu-settings-btn" id="menuSettingsBtn" title="設定" aria-label="設定">⚙️</button>
       <h1 class="menu-h1">🎲 數學拼圖樂園</h1>
       <p class="menu-sub">選一個題型開始挑戰吧！</p>
       <div class="menu-list" id="menuList"></div>
@@ -44,6 +58,26 @@
 
       <div class="cal-legend">
         每天答對越多，章越大：🌱 1–4 題　🌿 5–9 題　🌳 10–19 題　🏆 20 題以上
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 設定頁（家長使用） -->
+  <div class="screen settings-screen" id="settingsScreen">
+    <div class="settings-wrap">
+      <div class="settings-header">
+        <button class="back-btn" id="settingsBack">← 選單</button>
+        <h2>⚙️ 設定</h2>
+      </div>
+      <div class="settings-section">
+        <h3>📦 練習紀錄備份</h3>
+        <p class="settings-hint">建議定期匯出存到 iCloud Drive 當備份。在 iPad 上可從不同裝置匯入紀錄。</p>
+        <div class="cal-backup">
+          <button id="calExport" class="cal-backup-btn">⬇️ 匯出 JSON 備份</button>
+          <label class="cal-backup-btn" for="calImportFile">⬆️ 匯入 JSON</label>
+          <input type="file" id="calImportFile" accept="application/json,.json" hidden />
+        </div>
       </div>
     </div>
   </div>
@@ -108,9 +142,11 @@
       <button class="victory-next" id="victoryNext">下一題 →</button>
     </div>
   </div>
+<script src="install-hint.js" defer></script>
 <script src="storage.js" defer></script>
 <script src="problems/twoStepPuzzle.js" defer></script>
 <script src="calendar.js" defer></script>
+<script src="settings.js" defer></script>
 <script src="game.js" defer></script>
 </body>
 </html>

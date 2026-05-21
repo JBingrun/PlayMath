@@ -79,8 +79,54 @@
     return "🌱";
   }
 
+  function exportJSON() {
+    const data = load();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const stamp = todayKey().replace(/-/g, "");
+    a.href = url;
+    a.download = `playmath-history-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 100);
+  }
+
+  function importJSON(file, { merge = true } = {}) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const incoming = JSON.parse(reader.result);
+          if (!incoming || typeof incoming !== "object" || !incoming.days) {
+            reject(new Error("檔案格式不對"));
+            return;
+          }
+          const current = load();
+          const next = { days: { ...(merge ? current.days : {}) } };
+          Object.entries(incoming.days).forEach(([k, v]) => {
+            if (!v) return;
+            if (merge && next.days[k]) {
+              next.days[k] = {
+                correct: (next.days[k].correct ?? 0) + (v.correct ?? 0),
+                wrong:   (next.days[k].wrong   ?? 0) + (v.wrong   ?? 0),
+              };
+            } else {
+              next.days[k] = { correct: v.correct ?? 0, wrong: v.wrong ?? 0 };
+            }
+          });
+          save(next);
+          resolve(next);
+        } catch (e) { reject(e); }
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(file);
+    });
+  }
+
   window.PracticeStore = {
     todayKey, load, recordResult, getMonth,
     streakDays, monthSummary, allTimeCorrect, stampFor,
+    exportJSON, importJSON,
   };
 })();
