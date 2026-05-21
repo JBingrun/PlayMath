@@ -78,9 +78,9 @@ function buildEquation() {
   s1.innerHTML = `
     <div class="step-label">步驟1</div>
     <div class="eq-line">
-      <div class="slot num" data-expected="${state.a}"></div>
-      <div class="slot op" data-expected="×"></div>
       <div class="slot num" data-expected="${state.b}"></div>
+      <div class="slot op" data-expected="×"></div>
+      <div class="slot num" data-expected="${state.a}"></div>
     </div>
     <hr class="eq-divider">
     <div class="eq-line">

@@ -1,7 +1,17 @@
+  @font-face {
+    font-family: "Inter";
+    src: url("fonts/Inter-VariableFont_opsz,wght.ttf") format("truetype-variations");
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "BpmfHuninn";
+    src: url("fonts/BpmfHuninn-Regular.ttf") format("truetype");
+    font-display: swap;
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body {
     min-height: 100%;
-    font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+    font-family: "BpmfHuninn", "Inter", "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
     background: linear-gradient(135deg, #ffe4f1, #e0f7ff, #fff8d6);
     color: #333;
   }
@@ -13,7 +23,7 @@
     box-shadow: 0 12px 40px rgba(0,0,0,0.12);
     padding: 18px 22px;
   }
-  h1 { text-align: center; color: #ff6b9d; font-size: 22px; margin-bottom: 8px; }
+  h1 { text-align: center; color: #ff6b9d; font-size: 24px; margin-bottom: 8px; font-weight: normal; }
 
   /* 橫向兩欄主版面 */
   .layout { display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; align-items: start; }
@@ -25,9 +35,9 @@
   .stats {
     display: flex; justify-content: space-around;
     background: #fff3f8; border-radius: 14px;
-    padding: 10px; margin-bottom: 14px; font-size: 15px;
+    padding: 10px; margin-bottom: 14px; font-size: 17px;
   }
-  .stats span { color: #ff6b9d; font-weight: bold; font-size: 20px; margin-left: 4px; }
+  .stats span { color: #ff6b9d; font-size: 22px; margin-left: 4px; }
 
   .question-box {
     background: linear-gradient(135deg, #fff8e1, #fff0f7);
@@ -35,16 +45,16 @@
     border-radius: 16px;
     padding: 18px 20px;
     margin-bottom: 16px;
-    font-size: 19px; line-height: 1.7; color: #444;
+    font-size: 21px; line-height: 1.7; color: #444;
   }
   .question-box .label {
     display: inline-block;
     background: #ffb74d; color: white;
     padding: 3px 12px; border-radius: 10px;
-    font-size: 13px; margin-right: 8px; vertical-align: middle;
+    font-size: 15px; margin-right: 8px; vertical-align: middle;
   }
 
-  .section-title { font-size: 14px; color: #888; margin: 14px 0 8px; padding-left: 4px; }
+  .section-title { font-size: 16px; color: #888; margin: 14px 0 8px; padding-left: 4px; }
 
   /* 算式區 */
   .equation {
@@ -62,13 +72,13 @@
   .step + .step { border-left: 2px dashed #cfd8dc; }
   .step-label {
     align-self: flex-start;
-    font-size: 14px; font-weight: bold; color: #607d8b;
+    font-size: 16px; color: #607d8b;
     background: #eceff1; padding: 3px 10px; border-radius: 8px;
     margin-bottom: 4px;
   }
   .eq-line { display: flex; align-items: center; gap: 8px; min-height: 70px; }
   .eq-divider { width: 100%; max-width: 280px; border: none; border-top: 4px solid #555; margin: 6px 0; }
-  .eq-equal { font-size: 32px; font-weight: bold; color: #555; width: 32px; text-align: center; }
+  .eq-equal { font-size: 34px; color: #555; width: 32px; text-align: center; }
 
   .slot {
     height: 64px;
@@ -95,7 +105,7 @@
     border: 3px solid #ff6b9d;
     border-radius: 12px;
     background: #fff;
-    font-size: 32px; font-weight: bold;
+    font-size: 34px; 
     text-align: center; color: #ff6b9d;
     outline: none;
     -moz-appearance: textfield;
@@ -117,20 +127,20 @@
     padding: 14px;
     display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
   }
-  .combo-label { font-size: 13px; color: #6a1b9a; font-weight: bold; }
+  .combo-label { font-size: 15px; color: #6a1b9a; }
   .combo-block {
     min-width: 120px; height: 56px;
     border: 3px solid #ab47bc;
     background: #fff;
     border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 28px; font-weight: bold; color: #6a1b9a;
+    font-size: 30px; color: #6a1b9a;
     padding: 0 10px;
     transition: all 0.15s;
     touch-action: none;
   }
   .combo-block.empty::before {
-    content: "拖數字進來"; color: #ccc; font-size: 14px; font-weight: normal;
+    content: "拖數字進來"; color: #ccc; font-size: 16px; font-weight: normal;
   }
   .combo-block.ready {
     cursor: grab;
@@ -144,14 +154,14 @@
   .combo-clear {
     border: 2px solid #b39ddb; background: #fff; color: #7e57c2;
     width: 36px; height: 36px; border-radius: 50%;
-    font-size: 16px; cursor: pointer; font-weight: bold;
+    font-size: 18px; cursor: pointer; 
     transition: all 0.15s;
   }
   .combo-clear:hover { background: #ede7f6; }
   .eraser-btn {
     border: 3px solid #ef5350; background: #fff; color: #ef5350;
     border-radius: 12px; padding: 10px 16px;
-    font-size: 16px; font-weight: bold; cursor: pointer;
+    font-size: 18px; cursor: pointer;
     display: flex; align-items: center; gap: 6px;
     transition: all 0.15s;
   }
@@ -174,7 +184,7 @@
     width: 54px; height: 54px;
     border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 28px; font-weight: bold; color: white;
+    font-size: 30px; color: white;
     cursor: grab;
     user-select: none;
     touch-action: none;
@@ -204,7 +214,7 @@
   .btn {
     flex: 1; padding: 14px;
     border: none; border-radius: 12px;
-    font-size: 16px; font-weight: bold; cursor: pointer;
+    font-size: 18px; cursor: pointer;
     transition: all 0.15s;
   }
   .btn.primary { background: #ff6b9d; color: white; box-shadow: 0 4px 0 #c94a78; }
@@ -214,7 +224,7 @@
 
   .feedback {
     text-align: center; min-height: 30px;
-    font-size: 18px; font-weight: bold;
+    font-size: 20px; 
     margin-top: 12px;
   }
   .feedback.correct { color: #4caf50; }
@@ -251,19 +261,18 @@
     60% { transform: scale(1.1) rotate(3deg); }
     100% { transform: scale(1) rotate(0); opacity: 1; }
   }
-  .victory-emoji { font-size: 72px; line-height: 1; margin-bottom: 8px; animation: bounce 0.8s infinite alternate; }
+  .victory-emoji { font-size: 74px; line-height: 1; margin-bottom: 8px; animation: bounce 0.8s infinite alternate; }
   @keyframes bounce { to { transform: translateY(-12px); } }
   .victory-title {
-    font-size: 56px; font-weight: 900; color: #fff;
-    text-shadow: 0 4px 0 #c94a78, 0 8px 20px rgba(0,0,0,0.25);
+    font-size: 58px; color: #fff;
     letter-spacing: 4px; margin-bottom: 8px;
   }
-  .victory-sub { font-size: 22px; color: #fff; margin-bottom: 24px; font-weight: bold; }
+  .victory-sub { font-size: 24px; color: #fff; margin-bottom: 24px; }
   .victory-next {
     border: none;
     background: #fff; color: #ff6b9d;
     padding: 18px 48px; border-radius: 16px;
-    font-size: 24px; font-weight: 900;
+    font-size: 26px; 
     cursor: pointer;
     box-shadow: 0 6px 0 #c94a78, 0 10px 24px rgba(0,0,0,0.2);
     transition: all 0.1s;
