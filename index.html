@@ -7,51 +7,94 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="數學拼圖" />
 <meta name="mobile-web-app-capable" content="yes" />
-<title>二步驟運算拼圖</title>
+<title>數學拼圖</title>
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="game">
-    <h1>🧩 二步驟運算拼圖 🧮</h1>
-
-    <div class="stats">
-      <div>答對<span id="correctCount">0</span></div>
-      <div>答錯<span id="wrongCount">0</span></div>
-      <div>得分<span id="score">0</span></div>
-      <div>🔥連對<span id="streak">0</span></div>
+  <!-- 選單頁 -->
+  <div class="screen menu show" id="menuScreen">
+    <div class="menu-card-wrap">
+      <h1 class="menu-h1">🎲 數學拼圖樂園</h1>
+      <p class="menu-sub">選一個題型開始挑戰吧！</p>
+      <div class="menu-list" id="menuList"></div>
+      <button class="menu-calendar-btn" id="menuCalendarBtn">📅 練習日曆</button>
     </div>
+  </div>
 
-    <div class="layout">
-      <div class="col-left">
-        <div class="question-box">
-          <span class="label">題目</span><span id="questionText">準備好了嗎？</span>
+  <!-- 日曆頁 -->
+  <div class="screen calendar-screen" id="calendarScreen">
+    <div class="cal-wrap">
+      <div class="cal-header">
+        <button class="back-btn" id="calBack">← 選單</button>
+        <h2 id="calTitle">—</h2>
+        <div class="cal-nav">
+          <button id="calPrev" title="上個月">‹</button>
+          <button id="calToday">今天</button>
+          <button id="calNext" title="下個月">›</button>
         </div>
-
-        <div class="section-title">① 把數字和符號拖到算式中：</div>
-        <div class="equation" id="equation"></div>
-
-        <div class="feedback" id="feedback"></div>
       </div>
 
-      <div class="col-right">
-        <div class="section-title">② 組合方塊（組兩位數時把數字一個一個拖進來，再把整塊拖到算式裡）：</div>
-        <div class="combo-area" id="comboArea">
-          <span class="combo-label">組合方塊：</span>
-          <div class="combo-block empty" id="comboBlock" data-digits=""></div>
-          <button class="combo-clear" id="comboClear" title="清除">✕</button>
+      <div class="cal-stats">
+        <div class="cal-stat"><div class="cal-stat-num">🔥 <span id="calStreak">0</span></div><div class="cal-stat-label">連續天數</div></div>
+        <div class="cal-stat"><div class="cal-stat-num">📅 <span id="calMonthDays">0</span></div><div class="cal-stat-label">本月練習</div></div>
+        <div class="cal-stat"><div class="cal-stat-num">⭐ <span id="calAllCorrect">0</span></div><div class="cal-stat-label">累積答對</div></div>
+      </div>
+
+      <div class="cal-grid" id="calGrid"></div>
+
+      <div class="cal-legend">
+        每天答對越多，章越大：🌱 1–4 題　🌿 5–9 題　🌳 10–19 題　🏆 20 題以上
+      </div>
+    </div>
+  </div>
+
+  <!-- 遊戲頁 -->
+  <div class="screen game-screen" id="gameScreen">
+    <div class="game">
+      <div class="game-header">
+        <button class="back-btn" id="backBtn" title="回到選單">← 選單</button>
+        <h1 id="gameTitle">🧩 二步驟運算拼圖</h1>
+      </div>
+
+      <div class="stats">
+        <div>答對<span id="correctCount">0</span></div>
+        <div>答錯<span id="wrongCount">0</span></div>
+        <div>得分<span id="score">0</span></div>
+        <div>🔥連對<span id="streak">0</span></div>
+      </div>
+
+      <div class="layout">
+        <div class="col-left">
+          <div class="question-box">
+            <span class="label">題目</span><span id="questionText">準備好了嗎？</span>
+          </div>
+
+          <div class="section-title">① 把數字和符號拖到算式中：</div>
+          <div class="equation" id="equation"></div>
+
+          <div class="feedback" id="feedback"></div>
         </div>
 
-        <div class="section-title">③ 數字拼塊（0～9 可重複使用）：</div>
-        <div class="tray digit-tray" id="digitTray"></div>
+        <div class="col-right">
+          <div class="section-title">② 組合方塊（組兩位數時把數字一個一個拖進來，再把整塊拖到算式裡）：</div>
+          <div class="combo-area" id="comboArea">
+            <span class="combo-label">組合方塊：</span>
+            <div class="combo-block empty" id="comboBlock" data-digits=""></div>
+            <button class="combo-clear" id="comboClear" title="清除">✕</button>
+          </div>
 
-        <div class="section-title">④ 運算符號（+ − × ÷ 選對的拖過去）：</div>
-        <div class="tray op-tray" id="opTray"></div>
+          <div class="section-title">③ 數字拼塊（0～9 可重複使用）：</div>
+          <div class="tray digit-tray" id="digitTray"></div>
 
-        <div class="action-row">
-          <button class="eraser-btn" id="eraserBtn" title="點一下開啟，再點算式裡的格子可以清掉">🧽 橡皮擦</button>
-          <button class="btn secondary" id="resetBtn">重新開始</button>
-          <button class="btn primary" id="submitBtn">送出答案</button>
-          <button class="btn secondary" id="nextBtn">換一題</button>
+          <div class="section-title">④ 運算符號（+ − × ÷ 選對的拖過去）：</div>
+          <div class="tray op-tray" id="opTray"></div>
+
+          <div class="action-row">
+            <button class="eraser-btn" id="eraserBtn" title="點一下開啟，再點算式裡的格子可以清掉">🧽 橡皮擦</button>
+            <button class="btn secondary" id="resetBtn">重新開始</button>
+            <button class="btn primary" id="submitBtn">送出答案</button>
+            <button class="btn secondary" id="nextBtn">換一題</button>
+          </div>
         </div>
       </div>
     </div>
@@ -65,6 +108,9 @@
       <button class="victory-next" id="victoryNext">下一題 →</button>
     </div>
   </div>
+<script src="storage.js" defer></script>
+<script src="problems/twoStepPuzzle.js" defer></script>
+<script src="calendar.js" defer></script>
 <script src="game.js" defer></script>
 </body>
 </html>

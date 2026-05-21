@@ -1,15 +1,19 @@
-/* ========== 狀態 ========== */
+/* 通用遊戲引擎：負責拖拉、組合方塊、橡皮擦、計分、勝利動畫。
+ * 題型由外部傳入：需提供 { id, title, make(), buildEquation(eqEl, problem) }。
+ * 題型回傳的 problem 物件需有 ans（正確答案）與 text（題目文字）。
+ * 算式的對錯判定靠每個 .slot 的 data-expected 屬性。
+ */
+
+const PROBLEM_TYPES = window.PROBLEM_TYPES || [];
+
 const state = {
-  a: 0, b: 0, c: 0, sign: "+", ans: 0,
+  problem: null,
+  type: null,
   correct: 0, wrong: 0, score: 0, streak: 0,
 };
 
-/* ========== 工具 ========== */
 const $ = (id) => document.getElementById(id);
-const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
-const pick = (arr) => arr[rand(0, arr.length - 1)];
 
-// 找最近的格子（容忍 60px 內），讓孩子不用對得太準
 function findNearestSlot(x, y, opts = {}) {
   const { numOnly = false, opOnly = false, maxDist = 60 } = opts;
   let best = null, bestDist = Infinity;
@@ -19,8 +23,6 @@ function findNearestSlot(x, y, opts = {}) {
     if (numOnly && isOp) return;
     if (opOnly && !isOp) return;
     const r = s.getBoundingClientRect();
-    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    // 在格子內距離為 0，外面則用到中心距離
     const dx = Math.max(r.left - x, 0, x - r.right);
     const dy = Math.max(r.top  - y, 0, y - r.bottom);
     const edgeDist = Math.hypot(dx, dy);
@@ -30,90 +32,7 @@ function findNearestSlot(x, y, opts = {}) {
   return best;
 }
 
-/* ========== 題目生成 ========== */
-function makeProblem() {
-  const a = rand(2, 9);
-  const b = rand(2, 9);
-  const product = a * b;
-  let c, sign, ans, text;
-
-  if (Math.random() < 0.5) {
-    sign = "+";
-    c = rand(2, 10);
-    ans = product + c;
-    text = pick([
-      `🍩 烘焙坊一早做好 ${a} 盒甜甜圈，每盒裝 ${b} 個，老闆又從冰箱補了 ${c} 個剛炸好的。請問現在櫃台上總共有幾個甜甜圈？`,
-      `📚 圖書館整理書架，總共 ${a} 層，每層放 ${b} 本書。下午志工又搬來 ${c} 本捐贈的新書，現在書架上一共有幾本書？`,
-      `🍎 媽媽帶小美去果園，採了滿滿 ${a} 袋蘋果，每袋 ${b} 顆。回家路上小美又跟阿姨買了 ${c} 顆，她們一共帶了幾顆蘋果回家？`,
-      `🚗 哥哥在停車場數車子，看到 ${a} 排各停了 ${b} 輛車。沒多久又開來 ${c} 輛要停，現在停車場一共有幾輛車？`,
-      `🐠 早上水族館的 ${a} 個魚缸各放了 ${b} 條魚，到了下午館長又從外面帶回 ${c} 條新魚放進來。請問現在館內共有幾條魚？`,
-      `🍪 中午點心時間，廚房端出 ${a} 盤餅乾，每盤 ${b} 片。下課時老師又從櫃子拿出 ${c} 片，請問全部一共有幾片餅乾？`,
-    ]);
-  } else {
-    sign = "−";
-    const maxC = Math.min(product - 1, 10);
-    c = rand(1, maxC);
-    ans = product - c;
-    text = pick([
-      `🍰 蛋糕店一早烤好 ${a} 盤蛋糕，每盤 ${b} 個。中午被客人買走了 ${c} 個，請問櫃子裡還剩下幾個蛋糕？`,
-      `🎈 校慶布置準備了 ${a} 包氣球，每包 ${b} 顆，吹的時候不小心破掉 ${c} 顆。現在還剩下幾顆可以用？`,
-      `🍊 小安和爺爺到水果店幫忙，他們把橘子分裝成 ${a} 籃，每籃放 ${b} 顆。中午一位老師來買禮盒帶走了 ${c} 顆，請問架上還剩下幾顆橘子？`,
-      `🍪 阿嬤烤了 ${a} 盒餅乾，每盒裝 ${b} 片，弟弟拿了 ${c} 片去分給同學。請問餅乾盒裡還剩下幾片？`,
-      `📦 早上倉庫裡有 ${a} 箱書，每箱 ${b} 本。下午工人搬走了 ${c} 本送去學校，請問倉庫裡現在還剩下幾本書？`,
-      `🐟 清晨漁夫捕了 ${a} 簍魚，每簍 ${b} 條。中午到市場賣掉 ${c} 條，請問漁夫的船上還剩下幾條魚？`,
-    ]);
-  }
-  return { a, b, c, sign, ans, text };
-}
-
-/* ========== 建立算式 ========== */
-function buildEquation() {
-  const eq = $("equation");
-  eq.innerHTML = "";
-  const product = state.a * state.b;
-
-  // 步驟1：a × b = product
-  const s1 = document.createElement("div");
-  s1.className = "step";
-  s1.innerHTML = `
-    <div class="step-label">步驟1</div>
-    <div class="eq-line">
-      <div class="slot num" data-expected="${state.b}"></div>
-      <div class="slot op" data-expected="×"></div>
-      <div class="slot num" data-expected="${state.a}"></div>
-    </div>
-    <hr class="eq-divider">
-    <div class="eq-line">
-      <div class="eq-equal">=</div>
-      <div class="slot num" data-expected="${product}"></div>
-    </div>
-  `;
-  eq.appendChild(s1);
-
-  // 步驟2：product sign c = ?
-  const s2 = document.createElement("div");
-  s2.className = "step";
-  s2.innerHTML = `
-    <div class="step-label">步驟2</div>
-    <div class="eq-line">
-      <div class="slot num" data-expected="${product}"></div>
-      <div class="slot op" data-expected="${state.sign}"></div>
-      <div class="slot num" data-expected="${state.c}"></div>
-    </div>
-    <hr class="eq-divider">
-    <div class="eq-line">
-      <div class="eq-equal">=</div>
-      <input type="number" inputmode="numeric" class="answer-input" id="answer" placeholder="?" disabled />
-    </div>
-  `;
-  eq.appendChild(s2);
-
-  $("answer").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") { e.preventDefault(); $("answer").blur(); }
-  });
-}
-
-/* ========== 數字 / 運算符 托盤 ========== */
+/* ========== 拼塊托盤 ========== */
 function buildDigitTray() {
   const tray = $("digitTray");
   tray.innerHTML = "";
@@ -142,13 +61,13 @@ function buildOpTray() {
   });
 }
 
-/* ========== 通用拼塊拖拉（克隆飛行版） ========== */
+/* ========== 拼塊拖拉 ========== */
 function startPieceDrag(e) {
   if (eraserOn) { notifyEraserBlocking(); return; }
   e.preventDefault();
   const src = e.currentTarget;
   const value = src.dataset.value;
-  const type = src.dataset.type; // "digit" or "op"
+  const type = src.dataset.type;
   const rect = src.getBoundingClientRect();
   const offX = e.clientX - rect.left;
   const offY = e.clientY - rect.top;
@@ -170,7 +89,6 @@ function startPieceDrag(e) {
     const el = document.elementFromPoint(x, y);
     clone.style.visibility = "";
     const combo = el?.closest(".combo-block");
-    // 直接命中的格子優先；否則用就近抓取（依拼塊類型限定 num/op）
     let slot = el?.closest(".slot");
     if (!slot && !combo) {
       slot = findNearestSlot(x, y, type === "op" ? { opOnly: true } : { numOnly: true });
@@ -198,14 +116,12 @@ function startPieceDrag(e) {
     clearHover();
     const { slot, combo } = findTarget(ev.clientX, ev.clientY);
 
-    // 數字 -> 組合方塊
     if (type === "digit" && combo && !combo.classList.contains("placed")) {
       addDigitToCombo(combo, value);
       clone.remove();
       return;
     }
 
-    // 拖到格子（不檢驗對錯，送出時再判定）
     if (slot && !slot.children.length) {
       const slotKind = slot.classList.contains("op") ? "op" : "num";
       const pieceKind = type === "op" ? "op" : "num";
@@ -221,7 +137,6 @@ function startPieceDrag(e) {
         checkComplete();
         return;
       }
-      // 種類不符（數字 vs 運算符）才提示，不算錯
       clone.remove();
       showFeedback(slotKind === "op" ? "這格要放運算符號喔" : "這格要放數字喔", "hint");
       return;
@@ -284,7 +199,6 @@ function startComboDrag(e, combo) {
     document.querySelectorAll(".slot.hover").forEach(s => s.classList.remove("hover"));
   }
   function findSlot(x, y) {
-    // 組合方塊只能放數字格，並啟用就近偵測
     return findNearestSlot(x, y, { numOnly: true, maxDist: 80 });
   }
   function resetStyle() {
@@ -392,26 +306,37 @@ function submitAnswer() {
     updateStats();
     return;
   }
-  if (val === state.ans) {
+  if (val === state.problem.ans) {
     state.correct++; state.streak++;
     const bonus = state.streak >= 3 ? 5 : 0;
     state.score += 10 + bonus;
+    window.PracticeStore?.recordResult(true);
     showVictory(10 + bonus);
   } else {
     state.wrong++; state.streak = 0;
     state.score = Math.max(0, state.score - 2);
+    window.PracticeStore?.recordResult(false);
     showFeedback("不太對喔，再想想！", "wrong");
   }
   updateStats();
 }
 
 function newQuestion() {
-  Object.assign(state, makeProblem());
-  $("questionText").textContent = state.text;
-  buildEquation();
+  state.problem = state.type.make();
+  $("questionText").textContent = state.problem.text;
+  state.type.buildEquation($("equation"), state.problem);
+  bindAnswerInput();
   resetWorkspace();
   if (eraserOn) setEraser(false);
   showFeedback("", "");
+}
+
+function bindAnswerInput() {
+  const input = $("answer");
+  if (!input) return;
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); input.blur(); }
+  });
 }
 
 function resetWorkspace() {
@@ -472,18 +397,11 @@ function setEraser(on) {
 function eraseSlot(slot) {
   if (!slot.children.length) return;
   const child = slot.firstElementChild;
-  if (child.classList.contains("combo-block")) {
-    // 組合方塊：移除整個（已經有新的等著用）
-    child.remove();
-  } else {
-    child.remove();
-  }
+  child.remove();
   slot.classList.remove("filled", "erasable");
-  // 算式不完整 → 鎖住答案輸入
   const input = $("answer");
   if (input) { input.disabled = true; input.value = ""; }
 }
-// 橡皮擦開啟時，算式格子內的 pointerdown 立即視為消除（拖動也算）
 document.addEventListener("pointerdown", (e) => {
   if (!eraserOn) return;
   const slot = e.target.closest("#equation .slot");
@@ -493,20 +411,56 @@ document.addEventListener("pointerdown", (e) => {
   if (slot.children.length) eraseSlot(slot);
 }, true);
 
-/* ========== 事件 ========== */
+/* ========== 選單 / 切換頁面 ========== */
+function buildMenu() {
+  const list = $("menuList");
+  list.innerHTML = "";
+  PROBLEM_TYPES.forEach((type) => {
+    const btn = document.createElement("button");
+    btn.className = "menu-card";
+    btn.innerHTML = `
+      <div class="menu-emoji">${type.emoji ?? "🎲"}</div>
+      <div class="menu-title">${type.title}</div>
+      <div class="menu-desc">${type.description ?? ""}</div>
+    `;
+    btn.addEventListener("click", () => startGame(type));
+    list.appendChild(btn);
+  });
+}
+
+function startGame(type) {
+  state.type = type;
+  state.correct = 0; state.wrong = 0; state.score = 0; state.streak = 0;
+  updateStats();
+  $("menuScreen").classList.remove("show");
+  $("gameScreen").classList.add("show");
+  $("gameTitle").textContent = `${type.emoji ?? ""} ${type.title}`;
+  document.title = type.title;
+  newQuestion();
+}
+
+function backToMenu() {
+  $("gameScreen").classList.remove("show");
+  $("menuScreen").classList.add("show");
+  hideVictory();
+  if (eraserOn) setEraser(false);
+}
+
+/* ========== 啟動 ========== */
 $("eraserBtn").addEventListener("click", () => setEraser(!eraserOn));
 $("victoryNext").addEventListener("click", () => { hideVictory(); newQuestion(); });
 $("submitBtn").addEventListener("click", submitAnswer);
 $("nextBtn").addEventListener("click", newQuestion);
 $("resetBtn").addEventListener("click", () => {
-  buildEquation();
+  state.type.buildEquation($("equation"), state.problem);
+  bindAnswerInput();
   resetWorkspace();
   showFeedback("", "");
 });
+$("backBtn").addEventListener("click", backToMenu);
 
-/* ========== 啟動 ========== */
 buildDigitTray();
 buildOpTray();
 attachComboHandlers($("comboBlock"));
 $("comboClear").addEventListener("click", () => clearCombo($("comboBlock")));
-newQuestion();
+buildMenu();
