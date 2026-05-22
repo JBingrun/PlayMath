@@ -419,7 +419,9 @@ document.addEventListener("pointerdown", (e) => {
 /* ========== 選單 / 切換頁面 ========== */
 function buildMenu() {
   const list = $("menuList");
-  list.innerHTML = "";
+  const calBtn = $("menuCalendarBtn");
+  // 清除舊卡片，保留 calendar 按鈕
+  list.querySelectorAll(".menu-card").forEach(el => el.remove());
   PROBLEM_TYPES.forEach((type) => {
     const btn = document.createElement("button");
     btn.className = "menu-card";
@@ -429,7 +431,7 @@ function buildMenu() {
       <div class="menu-desc">${type.description ?? ""}</div>
     `;
     btn.addEventListener("click", () => startGame(type));
-    list.appendChild(btn);
+    list.insertBefore(btn, calBtn);
   });
 }
 

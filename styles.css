@@ -11,8 +11,8 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body {
     min-height: 100%;
-    font-family: "BpmfHuninn", "Inter", "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
-    background: linear-gradient(135deg, #ffe4f1, #e0f7ff, #fff8d6);
+    font-family: "Inter", "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+    background: #faf5e1;
     color: #333;
   }
   body { display: flex; align-items: center; justify-content: center; padding: 12px; }
@@ -24,26 +24,28 @@
   /* 選單頁 */
   .menu .menu-card-wrap {
     position: relative;
+    z-index: 1;
     width: 100%; max-width: 1100px;
-    background: #ffffffee;
-    border-radius: 24px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
-    padding: 32px 28px;
-    text-align: center;
+    background: transparent;
+    padding: 36px 28px 28px;
+    text-align: left;
   }
   .menu-settings-btn {
     position: absolute;
-    top: 12px; right: 12px;
-    width: 38px; height: 38px;
-    border: none;
+    top: 36px; right: 28px;
+    width: 48px; height: 48px;
+    border: 4px solid #423631;
     background: transparent;
-    font-size: 20px;
+    color: #423631;
+    font-size: 28px;
+    line-height: 1;
     cursor: pointer;
     border-radius: 50%;
-    opacity: 0.35;
-    transition: opacity 0.15s, background 0.15s;
+    opacity: 0.45;
+    transition: opacity 0.15s, background 0.15s, transform 0.15s;
+    font-family: inherit;
   }
-  .menu-settings-btn:hover { opacity: 1; background: #f3e5f5; }
+  .menu-settings-btn:hover { opacity: 1; background: rgba(0,0,0,0.05); transform: rotate(90deg); }
 
   /* 設定頁 */
   .settings-screen .settings-wrap {
@@ -80,39 +82,72 @@
   body.debug-on #debugSkipBtn:hover { background: #ffe0b2; }
   body.debug-on #debugFailBtn { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
   body.debug-on #debugFailBtn:hover { background: #ffcdd2; }
-  .menu-h1 { color: #ff6b9d; font-size: 30px; margin-bottom: 6px; font-weight: normal; }
-  .menu-sub { color: #888; font-size: 17px; margin-bottom: 22px; }
+  .menu-h1 {
+    color: #070401;
+    font-size: 72px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    line-height: 1.1;
+    text-align: left;
+  }
+  .menu-sub { color: #423631; font-size: 16px; margin-bottom: 22px; font-weight: normal; text-align: left; }
   .menu-list {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 247px);
     gap: 18px;
     padding: 4px;
+    justify-content: start;
   }
-  @media (max-width: 900px) {
-    .menu-list { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 1140px) {
+    .menu-list { grid-template-columns: repeat(3, 247px); }
   }
-  @media (max-width: 640px) {
-    .menu-list { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 870px) {
+    .menu-list { grid-template-columns: repeat(2, 247px); gap: 12px; }
+  }
+  @media (max-width: 580px) {
+    .menu-list { grid-template-columns: 247px; }
   }
   .menu-card {
-    min-height: 200px;
+    width: 247px;
+    height: 202px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    border: 3px solid #ffb74d;
-    background: linear-gradient(135deg, #fff8e1, #fff0f7);
+    justify-content: flex-start;
+    border: 0;
+    background-color: #eee8da;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
     border-radius: 18px;
-    padding: 22px 16px;
+    padding: 22px 20px;
     cursor: pointer;
     transition: transform 0.15s, box-shadow 0.15s;
     font-family: inherit;
-    text-align: center;
+    text-align: left;
   }
-  .menu-card:hover { transform: translateY(-4px); box-shadow: 0 10px 24px rgba(0,0,0,0.12); }
+  .menu-card:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(0,0,0,0.08); }
   .menu-card:active { transform: translateY(0); }
-  .menu-emoji { font-size: 48px; line-height: 1; margin-bottom: 8px; }
-  .menu-title { font-size: 22px; color: #ff6b9d; margin-bottom: 6px; }
-  .menu-desc { font-size: 15px; color: #666; line-height: 1.5; }
+  .menu-emoji { display: none; }
+  .menu-title { font-size: 22px; color: #070401; font-weight: normal; margin-bottom: 10px; line-height: 1.3; }
+  .menu-desc { font-size: 12px; color: #423631; line-height: 1.6; font-weight: normal; }
+
+  /* 卡片邊框配色輪替 — 使用 SVG 背景以支援圓頭虛線 */
+  .menu-card:nth-child(4n+2) {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 247 202'><rect x='3.5' y='3.5' width='240' height='195' rx='14.5' ry='14.5' fill='none' stroke='%239eb16f' stroke-width='7' stroke-linejoin='round'/></svg>");
+  }
+  .menu-card:nth-child(4n+3) {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 247 202'><rect x='3.5' y='3.5' width='240' height='195' rx='14.5' ry='14.5' fill='none' stroke='%23fdb8dd' stroke-width='7' stroke-dasharray='14 14' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  }
+  .menu-card:nth-child(4n+5),
+  .menu-card:nth-child(8n+5) {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 247 202'><rect x='3.5' y='3.5' width='240' height='195' rx='14.5' ry='14.5' fill='none' stroke='%23b9d0f0' stroke-width='7' stroke-dasharray='14 14' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  }
+
+  .menu-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 28px;
+  }
 
   /* 遊戲頁頭部 */
   .game-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
@@ -124,19 +159,22 @@
   .back-btn:hover { background: #eceff1; }
   .game-header h1 { flex: 1; margin-bottom: 0; }
 
-  /* 主畫面的日曆按鈕 */
+  /* 主畫面的日曆按鈕 — 與卡片同高，位於 grid 最後一格 */
   .menu-calendar-btn {
-    margin-top: 22px;
-    border: 2px dashed #ba68c8;
-    background: linear-gradient(135deg, #f3e5f5, #fff);
-    color: #6a1b9a;
-    border-radius: 14px;
-    padding: 14px 22px;
-    font-size: 18px; font-family: inherit;
+    width: 247px;
+    height: 202px;
+    border: none;
+    background: #070401;
+    color: #faf5e1;
+    border-radius: 18px;
+    padding: 14px 28px;
+    font-size: 20px; font-family: inherit; font-weight: normal;
     cursor: pointer;
     transition: all 0.15s;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    align-self: end;
   }
-  .menu-calendar-btn:hover { background: linear-gradient(135deg, #e1bee7, #f3e5f5); transform: translateY(-2px); }
+  .menu-calendar-btn:hover { background: #2a1f1c; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
 
   /* 日曆頁 */
   .calendar-screen .cal-wrap {
