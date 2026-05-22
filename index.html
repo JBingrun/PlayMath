@@ -31,7 +31,7 @@
       <h1 class="menu-h1">🎲 數學拼圖樂園</h1>
       <p class="menu-sub">選一個題型開始挑戰吧！</p>
       <div class="menu-list" id="menuList"></div>
-      <button class="menu-calendar-btn" id="menuCalendarBtn">📅 練習日曆</button>
+      <button class="menu-calendar-btn" id="menuCalendarBtn">📅 練習紀錄</button>
     </div>
   </div>
 
@@ -46,12 +46,6 @@
           <button id="calToday">今天</button>
           <button id="calNext" title="下個月">›</button>
         </div>
-      </div>
-
-      <div class="cal-stats">
-        <div class="cal-stat"><div class="cal-stat-num">🔥 <span id="calStreak">0</span></div><div class="cal-stat-label">連續天數</div></div>
-        <div class="cal-stat"><div class="cal-stat-num">📅 <span id="calMonthDays">0</span></div><div class="cal-stat-label">本月練習</div></div>
-        <div class="cal-stat"><div class="cal-stat-num">⭐ <span id="calAllCorrect">0</span></div><div class="cal-stat-label">累積答對</div></div>
       </div>
 
       <div class="cal-grid" id="calGrid"></div>
@@ -88,6 +82,10 @@
       <div class="game-header">
         <button class="back-btn" id="backBtn" title="回到選單">← 選單</button>
         <h1 id="gameTitle">🧩 二步驟運算拼圖</h1>
+        <div class="points-bag" id="pointsBag" title="點數收集袋">
+          <div class="points-bag-icon">💰</div>
+          <div class="points-bag-count" id="pointsBagCount">0</div>
+        </div>
       </div>
 
       <div class="stats">
@@ -127,6 +125,8 @@
             <button class="eraser-btn" id="eraserBtn" title="點一下開啟，再點算式裡的格子可以清掉">🧽 橡皮擦</button>
             <button class="btn secondary" id="resetBtn">重新開始</button>
             <button class="btn primary" id="submitBtn">送出答案</button>
+            <button class="btn debug-skip" id="debugSkipBtn" title="Debug：直接通關此題">⚡ 快速通關</button>
+            <button class="btn debug-fail" id="debugFailBtn" title="Debug：直接記為失敗">💥 快速失敗</button>
             <button class="btn secondary" id="nextBtn">換一題</button>
           </div>
         </div>
@@ -145,6 +145,12 @@
 <script src="install-hint.js" defer></script>
 <script src="storage.js" defer></script>
 <script src="problems/twoStepPuzzle.js" defer></script>
+<script src="problems/diffTimes.js" defer></script>
+<script src="problems/changeBack.js" defer></script>
+<script src="problems/twoGroupsAdd.js" defer></script>
+<script src="problems/compareTwoGroups.js" defer></script>
+<script src="problems/timesCompare.js" defer></script>
+<script src="problems/clockMinutes.js" defer></script>
 <script src="calendar.js" defer></script>
 <script src="settings.js" defer></script>
 <script src="game.js" defer></script>

@@ -10,6 +10,9 @@ const state = {
   problem: null,
   type: null,
   correct: 0, wrong: 0, score: 0, streak: 0,
+  bagPoints: 0,
+  pendingCoins: 0,
+  pendingBonus: 0,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -310,12 +313,13 @@ function submitAnswer() {
     state.correct++; state.streak++;
     const bonus = state.streak >= 3 ? 5 : 0;
     state.score += 10 + bonus;
-    window.PracticeStore?.recordResult(true);
+    queueBagPoints();
+    window.PracticeStore?.recordResult(true, state.type?.id, state.type?.title);
     showVictory(10 + bonus);
   } else {
     state.wrong++; state.streak = 0;
     state.score = Math.max(0, state.score - 2);
-    window.PracticeStore?.recordResult(false);
+    window.PracticeStore?.recordResult(false, state.type?.id, state.type?.title);
     showFeedback("不太對喔，再想想！", "wrong");
   }
   updateStats();
@@ -369,6 +373,7 @@ function showVictory(points) {
   document.body.classList.add("celebrating");
   $("victory").classList.add("show");
   updateStats();
+  flushPendingCoins();
 }
 function hideVictory() {
   document.body.classList.remove("celebrating");
@@ -431,6 +436,8 @@ function buildMenu() {
 function startGame(type) {
   state.type = type;
   state.correct = 0; state.wrong = 0; state.score = 0; state.streak = 0;
+  state.bagPoints = 0; state.pendingCoins = 0; state.pendingBonus = 0;
+  updateBag();
   updateStats();
   $("menuScreen").classList.remove("show");
   $("gameScreen").classList.add("show");
@@ -446,10 +453,96 @@ function backToMenu() {
   if (eraserOn) setEraser(false);
 }
 
+/* ========== 點數收集袋 ========== */
+function updateBag() {
+  const el = $("pointsBagCount");
+  if (el) el.textContent = state.bagPoints;
+}
+function queueBagPoints() {
+  // 每答對一題基本 5 點；連對到 5 的倍數加贈 5 點（共 10 點）
+  state.pendingCoins += 5;
+  if (state.streak > 0 && state.streak % 5 === 0) state.pendingBonus += 5;
+}
+function flushPendingCoins() {
+  const base = state.pendingCoins;
+  const bonus = state.pendingBonus;
+  state.pendingCoins = 0;
+  state.pendingBonus = 0;
+  if (base <= 0 && bonus <= 0) return;
+  // 等下一題畫面 layout 穩定後再生成
+  requestAnimationFrame(() => {
+    spawnCoinsToBag(base, false);
+    if (bonus > 0) setTimeout(() => spawnCoinsToBag(bonus, true), 250);
+  });
+}
+function spawnCoinsToBag(count, isBonus) {
+  const bag = $("pointsBag");
+  if (!bag || count <= 0) return;
+  const bagRect = bag.getBoundingClientRect();
+  const targetX = bagRect.left + bagRect.width / 2;
+  const targetY = bagRect.top + bagRect.height / 2;
+  // 出生點：勝利卡片中央，沒顯示時退回題目區
+  const victoryEl = document.querySelector("#victory.show .victory-card");
+  const src = victoryEl || document.querySelector(".question-box") || document.body;
+  const sRect = src.getBoundingClientRect();
+  const startX = sRect.left + sRect.width / 2;
+  const startY = sRect.top + sRect.height / 2;
+
+  for (let i = 0; i < count; i++) {
+    const coin = document.createElement("div");
+    coin.className = "coin-fly" + (isBonus ? " bonus" : "");
+    // 在起點周圍隨機散開一點
+    const jitterX = (Math.random() - 0.5) * 80;
+    const jitterY = (Math.random() - 0.5) * 40;
+    const sx = startX + jitterX - 18;
+    const sy = startY + jitterY - 18;
+    coin.style.left = sx + "px";
+    coin.style.top = sy + "px";
+    coin.style.transform = "translate(0,0) scale(1.2)";
+    document.body.appendChild(coin);
+
+    const dx = targetX - (sx + 18);
+    const dy = targetY - (sy + 18);
+    const delay = i * 90;
+
+    setTimeout(() => {
+      coin.style.transform = `translate(${dx}px, ${dy}px) scale(0.5)`;
+      coin.style.opacity = "0.2";
+    }, delay + 20);
+
+    setTimeout(() => {
+      state.bagPoints += 1;
+      updateBag();
+      bag.classList.remove("bump");
+      void bag.offsetWidth;
+      bag.classList.add("bump");
+      coin.remove();
+    }, delay + 750);
+  }
+}
+
 /* ========== 啟動 ========== */
 $("eraserBtn").addEventListener("click", () => setEraser(!eraserOn));
 $("victoryNext").addEventListener("click", () => { hideVictory(); newQuestion(); });
 $("submitBtn").addEventListener("click", submitAnswer);
+$("debugSkipBtn").addEventListener("click", () => {
+  if (!state.problem) return;
+  state.correct++; state.streak++;
+  const bonus = state.streak >= 3 ? 5 : 0;
+  state.score += 10 + bonus;
+  queueBagPoints();
+  window.PracticeStore?.recordResult(true, state.type?.id, state.type?.title);
+  updateStats();
+  showVictory(10 + bonus);
+});
+$("debugFailBtn").addEventListener("click", () => {
+  if (!state.problem) return;
+  state.wrong++; state.streak = 0;
+  state.score = Math.max(0, state.score - 2);
+  window.PracticeStore?.recordResult(false, state.type?.id, state.type?.title);
+  updateStats();
+  showFeedback("💥 Debug：已記為失敗", "wrong");
+});
 $("nextBtn").addEventListener("click", newQuestion);
 $("resetBtn").addEventListener("click", () => {
   state.type.buildEquation($("equation"), state.problem);

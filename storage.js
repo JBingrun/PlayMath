@@ -24,13 +24,74 @@
     try { localStorage.setItem(KEY, JSON.stringify(data)); } catch {}
   }
 
-  function recordResult(isCorrect) {
+  function recordResult(isCorrect, typeId, typeTitle) {
     const data = load();
     const key = todayKey();
-    const day = data.days[key] ?? { correct: 0, wrong: 0 };
+    const day = data.days[key] ?? { correct: 0, wrong: 0, types: {} };
+    if (!day.types) day.types = {};
     if (isCorrect) day.correct++; else day.wrong++;
+    if (typeId) {
+      const t = day.types[typeId] ?? { title: typeTitle || typeId, correct: 0, wrong: 0 };
+      if (typeTitle) t.title = typeTitle;
+      if (isCorrect) t.correct++; else t.wrong++;
+      day.types[typeId] = t;
+    }
     data.days[key] = day;
     save(data);
+  }
+
+  // 取得指定日期所在週的週一（以週一為一週起始）
+  function mondayOf(d) {
+    const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const dow = x.getDay(); // 0=Sun..6=Sat
+    const diff = dow === 0 ? -6 : 1 - dow;
+    x.setDate(x.getDate() + diff);
+    return x;
+  }
+
+  function fmtKey(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  // 統計指定週一起算的七天紀錄，回傳各題型統計與建議
+  function weekSummary(mondayDate) {
+    const data = load();
+    const types = {}; // id -> { title, correct, wrong }
+    let totalCorrect = 0, totalWrong = 0, practicedDays = 0;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(mondayDate);
+      d.setDate(mondayDate.getDate() + i);
+      const rec = data.days[fmtKey(d)];
+      if (!rec) continue;
+      if ((rec.correct ?? 0) + (rec.wrong ?? 0) > 0) practicedDays++;
+      totalCorrect += rec.correct ?? 0;
+      totalWrong += rec.wrong ?? 0;
+      const dt = rec.types || {};
+      Object.entries(dt).forEach(([id, v]) => {
+        const t = types[id] ?? { title: v.title || id, correct: 0, wrong: 0 };
+        t.title = v.title || t.title;
+        t.correct += v.correct ?? 0;
+        t.wrong += v.wrong ?? 0;
+        types[id] = t;
+      });
+    }
+    const typeList = Object.entries(types).map(([id, v]) => {
+      const total = v.correct + v.wrong;
+      return { id, title: v.title, correct: v.correct, wrong: v.wrong, total,
+               errorRate: total ? v.wrong / total : 0 };
+    });
+    typeList.sort((a, b) => b.total - a.total);
+
+    // 建議：錯誤率最高（至少做過 2 題以上），否則做題數最少的
+    let suggest = null;
+    const eligible = typeList.filter(t => t.total >= 2 && t.wrong > 0);
+    if (eligible.length) {
+      suggest = eligible.slice().sort((a, b) => b.errorRate - a.errorRate || b.wrong - a.wrong)[0];
+    }
+    return { totalCorrect, totalWrong, practicedDays, types: typeList, suggest };
   }
 
   function getMonth(year, month) {
@@ -127,6 +188,8 @@
   window.PracticeStore = {
     todayKey, load, recordResult, getMonth,
     streakDays, monthSummary, allTimeCorrect, stampFor,
+    mondayOf, weekSummary,
     exportJSON, importJSON,
+    clearAll: () => { try { localStorage.removeItem(KEY); } catch {} },
   };
 })();
