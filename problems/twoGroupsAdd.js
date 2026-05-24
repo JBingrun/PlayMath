@@ -8,6 +8,17 @@
 
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
 const pick = (arr) => arr[rand(0, arr.length - 1)];
+const makePicker = () => {
+  let last = -1;
+  return (arr) => {
+    if (arr.length <= 1) return arr[0];
+    let i;
+    do { i = rand(0, arr.length - 1); } while (i === last);
+    last = i;
+    return arr[i];
+  };
+};
+const pickText = makePicker();
 
 function make() {
   const a = rand(2, 6);
@@ -17,7 +28,7 @@ function make() {
   const p2 = c * b;
   const ans = p1 + p2;
 
-  const text = pick([
+  const text = pickText([
     `🧁 媽媽買了 ${a} 盒巧克力杯子蛋糕和 ${c} 盒草莓杯子蛋糕，每盒都有 ${b} 個。一共買了幾個杯子蛋糕？`,
     `🥟 哥哥買了 ${a} 包鮮肉小籠包和 ${c} 包高麗菜小籠包，每包 ${b} 顆。兩種小籠包一共有幾顆？`,
     `🍙 便利商店進貨 ${a} 盒鮪魚飯糰和 ${c} 盒梅子飯糰，每盒 ${b} 個。架上一共有幾個飯糰？`,

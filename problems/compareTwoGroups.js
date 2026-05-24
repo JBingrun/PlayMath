@@ -8,6 +8,17 @@
 
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
 const pick = (arr) => arr[rand(0, arr.length - 1)];
+const makePicker = () => {
+  let last = -1;
+  return (arr) => {
+    if (arr.length <= 1) return arr[0];
+    let i;
+    do { i = rand(0, arr.length - 1); } while (i === last);
+    last = i;
+    return arr[i];
+  };
+};
+const pickText = makePicker();
 
 function make() {
   const a = rand(2, 8);            // 共同數量
@@ -17,9 +28,9 @@ function make() {
   const p2 = a * c;
   const ans = p1 - p2;
 
-  const text = pick([
+  const text = pickText([
     `🥤 一杯珍奶 ${b} 元，一杯紅茶 ${c} 元，買 ${a} 杯珍奶比買 ${a} 杯紅茶貴幾元？`,
-    `🍡 一支烤糰子 ${b} 元，一支熱狗 ${c} 元，買 ${a} 支烤糰子比買 ${a} 支熱狗貴多少元？`,
+    `🍌 一根香蕉 ${b} 元，一顆蘋果 ${c} 元，買 ${a} 根香蕉比買 ${a} 顆蘋果貴多少元？`,
     `🧃 一瓶蘋果汁 ${b} 元，一瓶礦泉水 ${c} 元，買 ${a} 瓶蘋果汁比 ${a} 瓶礦泉水貴幾元？`,
     `🍩 一個甜甜圈 ${b} 元，一個小餐包 ${c} 元，買 ${a} 個甜甜圈比 ${a} 個小餐包貴幾元？`,
     `🥨 一個可頌 ${b} 元，一個吐司 ${c} 元，買 ${a} 個可頌比 ${a} 個吐司貴多少元？`,

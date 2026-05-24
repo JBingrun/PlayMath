@@ -6,6 +6,17 @@
 
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
 const pick = (arr) => arr[rand(0, arr.length - 1)];
+const makePicker = () => {
+  let last = -1;
+  return (arr) => {
+    if (arr.length <= 1) return arr[0];
+    let i;
+    do { i = rand(0, arr.length - 1); } while (i === last);
+    last = i;
+    return arr[i];
+  };
+};
+const pickText = makePicker();
 
 function make() {
   const b = rand(3, 12);            // 單價 / 每包個數
@@ -14,7 +25,7 @@ function make() {
   const a = product + rand(2, 30);  // 總額一定大於 product
   const ans = a - product;
 
-  const text = pick([
+  const text = pickText([
     `💰 一個紅豆餅 ${b} 元，媽媽買了 ${c} 個，付 ${a} 元可以找回幾元？`,
     `🥟 一顆水餃 ${b} 元，爸爸買了 ${c} 顆，付 ${a} 元能找回多少元？`,
     `🍭 一支棒棒糖 ${b} 元，小宇買了 ${c} 支，拿 ${a} 元結帳可以找回幾元？`,

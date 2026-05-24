@@ -7,6 +7,17 @@
 
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
 const pick = (arr) => arr[rand(0, arr.length - 1)];
+const makePicker = () => {
+  let last = -1;
+  return (arr) => {
+    if (arr.length <= 1) return arr[0];
+    let i;
+    do { i = rand(0, arr.length - 1); } while (i === last);
+    last = i;
+    return arr[i];
+  };
+};
+const pickText = makePicker();
 
 function make() {
   const a = rand(2, 9);           // 大格
@@ -14,7 +25,7 @@ function make() {
   const bigMin = a * 5;
   const ans = bigMin + b;
 
-  const text = pick([
+  const text = pickText([
     `🕐 長針走 1 大格是 5 分鐘，走 1 小格是 1 分鐘。長針走了 ${a} 大格又 ${b} 小格，總共經過幾分鐘？`,
     `⏰ 時鐘的長針走 1 大格代表 5 分鐘，1 小格代表 1 分鐘。如果長針走了 ${a} 大格又 ${b} 小格，總共是幾分鐘？`,
     `🧭 看著時鐘的長針，它從 12 開始走，走了 ${a} 大格又 ${b} 小格停下來。長針一共走了幾分鐘？`,

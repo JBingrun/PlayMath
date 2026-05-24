@@ -7,6 +7,18 @@
 
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
 const pick = (arr) => arr[rand(0, arr.length - 1)];
+const makePicker = () => {
+  let last = -1;
+  return (arr) => {
+    if (arr.length <= 1) return arr[0];
+    let i;
+    do { i = rand(0, arr.length - 1); } while (i === last);
+    last = i;
+    return arr[i];
+  };
+};
+const pickAdd = makePicker();
+const pickSub = makePicker();
 
 function make() {
   const a = rand(2, 9);
@@ -18,7 +30,7 @@ function make() {
     sign = "+";
     c = rand(2, 10);
     ans = product + c;
-    text = pick([
+    text = pickAdd([
       `🍩 烘焙坊一早做好 ${a} 盒甜甜圈，每盒裝 ${b} 個，老闆又從冰箱補了 ${c} 個剛炸好的。請問現在櫃台上總共有幾個甜甜圈？`,
       `📚 圖書館整理書架，總共 ${a} 層，每層放 ${b} 本書。下午志工又搬來 ${c} 本捐贈的新書，現在書架上一共有幾本書？`,
       `🍎 媽媽帶小美去果園，採了滿滿 ${a} 袋蘋果，每袋 ${b} 顆。回家路上小美又跟阿姨買了 ${c} 顆，她們一共帶了幾顆蘋果回家？`,
@@ -31,7 +43,7 @@ function make() {
     const maxC = Math.min(product - 1, 10);
     c = rand(1, maxC);
     ans = product - c;
-    text = pick([
+    text = pickSub([
       `🍰 蛋糕店一早烤好 ${a} 盤蛋糕，每盤 ${b} 個。中午被客人買走了 ${c} 個，請問櫃子裡還剩下幾個蛋糕？`,
       `🎈 校慶布置準備了 ${a} 包氣球，每包 ${b} 顆，吹的時候不小心破掉 ${c} 顆。現在還剩下幾顆可以用？`,
       `🍊 小安和爺爺到水果店幫忙，他們把橘子分裝成 ${a} 籃，每籃放 ${b} 顆。中午一位老師來買禮盒帶走了 ${c} 顆，請問架上還剩下幾顆橘子？`,

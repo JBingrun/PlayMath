@@ -6,15 +6,26 @@
 
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
 const pick = (arr) => arr[rand(0, arr.length - 1)];
+const makePicker = () => {
+  let last = -1;
+  return (arr) => {
+    if (arr.length <= 1) return arr[0];
+    let i;
+    do { i = rand(0, arr.length - 1); } while (i === last);
+    last = i;
+    return arr[i];
+  };
+};
+const pickText = makePicker();
 
 function make() {
   const b = rand(2, 9);          // 便宜的金額
-  const a = b + rand(2, 12);     // 原價（一定 > b）
+  const a = b + rand(2, 9);      // 原價（一定 > b，且 diff 維持一位數）
   const c = rand(2, 9);          // 買幾杯/幾個
   const diff = a - b;
   const ans = diff * c;
 
-  const text = pick([
+  const text = pickText([
     `🧋 一杯紅茶 ${a} 元，一杯奶茶比紅茶便宜 ${b} 元，買 ${c} 杯奶茶要付多少元？`,
     `🍗 一份雞排 ${a} 元，一份雞塊比雞排便宜 ${b} 元，買 ${c} 份雞塊要花多少元？`,
     `🍕 一片披薩原價 ${a} 元，特價時便宜 ${b} 元，媽媽特價時買了 ${c} 片，共要多少元？`,

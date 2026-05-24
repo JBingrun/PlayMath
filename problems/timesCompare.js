@@ -7,9 +7,21 @@
 
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
 const pick = (arr) => arr[rand(0, arr.length - 1)];
+const makePicker = () => {
+  let last = -1;
+  return (arr) => {
+    if (arr.length <= 1) return arr[0];
+    let i;
+    do { i = rand(0, arr.length - 1); } while (i === last);
+    last = i;
+    return arr[i];
+  };
+};
+const pickText = makePicker();
+const pickNames = makePicker();
 
 function make() {
-  const a = rand(3, 12);          // 小星有幾張
+  const a = rand(3, 9);           // 小星有幾張（維持一位數）
   const b = rand(2, 6);           // 幾倍
   const product = a * b;
   const more = Math.random() < 0.5;
@@ -17,13 +29,13 @@ function make() {
   const sign = more ? "+" : "−";
   const ans = more ? product + c : product - c;
 
-  const namesPair = pick([
+  const namesPair = pickNames([
     ["小宇", "小晴"], ["阿良", "阿萱"], ["哥哥", "妹妹"], ["小傑", "小婷"],
   ]);
   const [A, B] = namesPair;
   const moreWord = more ? "多" : "少";
 
-  const text = pick([
+  const text = pickText([
     `🃏 ${A} 有 ${a} 張遊戲卡，${B} 的卡數是 ${A} 的 ${b} 倍${moreWord} ${c} 張，${B} 有幾張遊戲卡？`,
     `⭐ ${A} 蒐集了 ${a} 張貼紙，${B} 的貼紙是 ${A} 的 ${b} 倍${moreWord} ${c} 張，${B} 有幾張貼紙？`,
     `🎟 ${A} 有 ${a} 張遊樂園代幣，${B} 的代幣是 ${A} 的 ${b} 倍${moreWord} ${c} 張，${B} 有幾張代幣？`,

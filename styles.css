@@ -84,14 +84,14 @@
   body.debug-on #debugFailBtn:hover { background: #ffcdd2; }
   .menu-h1 {
     color: #070401;
-    font-size: 72px;
+    font-size: 96px;
     font-weight: 800;
     letter-spacing: 2px;
     margin-bottom: 10px;
     line-height: 1.1;
     text-align: left;
   }
-  .menu-sub { color: #423631; font-size: 16px; margin-bottom: 22px; font-weight: normal; text-align: left; }
+  .menu-sub { color: #423631; font-size: 24px; margin-bottom: 22px; font-weight: 700; text-align: left; }
   .menu-list {
     display: grid;
     grid-template-columns: repeat(4, 247px);
@@ -618,7 +618,7 @@
   }
   .combo-block.hover { background: #fff3e0; border-color: #ff9800; transform: scale(1.05); }
   .combo-block.dragging { box-shadow: 0 12px 30px rgba(0,0,0,0.3); transform: scale(1.1) rotate(-3deg); transition: none; will-change: left, top; }
-  .combo-block.placed { width: 100%; height: 100%; box-shadow: none; }
+  .combo-block.placed { width: 100%; height: 100%; min-width: 0; padding: 0; box-shadow: none; }
   .combo-clear {
     border: 2px solid #b39ddb; background: #fff; color: #7e57c2;
     width: 36px; height: 36px; border-radius: 50%;
