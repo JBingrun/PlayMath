@@ -2,7 +2,7 @@
 (function () {
   const $ = (id) => document.getElementById(id);
   const MONTHS_TW = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
-  const WEEK_TW = ["週一", "週二", "週三", "週四", "週五", "週六", "本週總結"];
+  const WEEK_TW = ["週一", "週二", "週三", "週四", "週五", "週六", "週日"];
 
   let viewYear, viewMonth; // month: 0-based
 
@@ -29,16 +29,19 @@
     // 以週一為起始，找出涵蓋本月第一天的那一週的週一
     const gridStart = store.mondayOf(first);
 
-    // 一週一週渲染：週一~週六各一格 + 第七格 = 本週總結（涵蓋週一~週日）
+    // 一週一週渲染：週一~週日各一格；週日格同時是本週總結的入口（點擊開啟）
     let weekMonday = new Date(gridStart);
     for (let w = 0; w < 6; w++) {
       if (weekMonday > last) break;
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < 7; i++) {
         const d = new Date(weekMonday);
         d.setDate(weekMonday.getDate() + i);
-        appendDayCell(grid, d, days, todayKey);
+        if (i === 6) {
+          appendSundayCell(grid, d, days, todayKey, new Date(weekMonday), store);
+        } else {
+          appendDayCell(grid, d, days, todayKey);
+        }
       }
-      appendWeekSummaryCell(grid, new Date(weekMonday), store);
       weekMonday.setDate(weekMonday.getDate() + 7);
     }
   }
@@ -62,26 +65,27 @@
     grid.appendChild(cell);
   }
 
-  function appendWeekSummaryCell(grid, weekMonday, store) {
-    const sum = store.weekSummary(weekMonday);
+  function appendSundayCell(grid, d, days, todayKey, weekMonday, store) {
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const inMonth = d.getMonth() === viewMonth;
+    const rec = days[key];
+    const correct = rec?.correct ?? 0;
     const cell = document.createElement("button");
     cell.type = "button";
-    cell.className = "cal-cell cal-summary";
-    if (sum.practicedDays === 0) {
-      cell.classList.add("empty-summary");
-      cell.disabled = true;
-      cell.innerHTML = `<div class="cal-summary-title">本週總結</div>
-        <div class="cal-summary-empty">本週尚未練習</div>`;
-      grid.appendChild(cell);
-      return;
-    }
+    cell.className = "cal-cell cal-sunday";
+    if (!inMonth) cell.classList.add("out");
+    if (key === todayKey) cell.classList.add("today");
+    if (correct > 0) cell.classList.add("done");
+    cell.title = "點我看本週總結";
     cell.innerHTML = `
-      <div class="cal-summary-title">本週總結 📊</div>
-      <div class="cal-summary-overview">練習 ${sum.practicedDays} 天</div>
-      <div class="cal-summary-overview">答對 ${sum.totalCorrect} 題</div>
-      <div class="cal-summary-hint">點我看圓餅圖</div>
+      <div class="cal-date">${d.getDate()}</div>
+      <div class="cal-stamp">${store.stampFor(correct)}</div>
+      ${correct > 0 ? `<div class="cal-count">${correct} 題</div>` : ""}
     `;
-    cell.addEventListener("click", () => openWeekSummaryModal(weekMonday, sum));
+    cell.addEventListener("click", () => {
+      const sum = store.weekSummary(weekMonday);
+      openWeekSummaryModal(weekMonday, sum);
+    });
     grid.appendChild(cell);
   }
 

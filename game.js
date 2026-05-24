@@ -13,7 +13,71 @@ const state = {
   bagPoints: 0,
   pendingCoins: 0,
   pendingBonus: 0,
+  timerStartAt: 0,
+  timerInterval: null,
+  timerPhase: "bonus", // "bonus" | "normal" | "timeout"
 };
+
+const TIMER_BONUS_MS = 60 * 1000;
+const TIMER_LIMIT_MS = 3 * 60 * 1000;
+
+function startQuestionTimer() {
+  stopQuestionTimer();
+  state.timerStartAt = performance.now();
+  state.timerPhase = "bonus";
+  updateTimerUI(0);
+  state.timerInterval = setInterval(() => {
+    const elapsed = performance.now() - state.timerStartAt;
+    updateTimerUI(elapsed);
+    if (elapsed >= TIMER_LIMIT_MS && state.timerPhase !== "timeout") {
+      state.timerPhase = "timeout";
+      updateTimerUI(TIMER_LIMIT_MS);
+      clearInterval(state.timerInterval);
+      state.timerInterval = null;
+      showFeedback("⏰ 時間到！答對只能拿 1 分囉", "hint");
+    }
+  }, 200);
+}
+function stopQuestionTimer() {
+  if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+}
+function getElapsedMs() {
+  if (!state.timerStartAt) return 0;
+  return performance.now() - state.timerStartAt;
+}
+function updateTimerUI(elapsed) {
+  const bar = $("timerBar");
+  const fill = $("timerFill");
+  const text = $("timerText");
+  const handMin = document.getElementById("timerHandMin");
+  const handSec = document.getElementById("timerHandSec");
+  if (!bar || !fill || !text) return;
+  const remain = Math.max(0, TIMER_LIMIT_MS - elapsed);
+  const ratio = remain / TIMER_LIMIT_MS;
+  fill.style.width = (ratio * 100) + "%";
+  const remainSec = Math.ceil(remain / 1000);
+  const m = Math.floor(remainSec / 60);
+  const s = remainSec % 60;
+  text.textContent = `${m}:${String(s).padStart(2, "0")}`;
+  let phase = "normal";
+  if (elapsed >= TIMER_LIMIT_MS) phase = "timeout";
+  else if (elapsed < TIMER_BONUS_MS) phase = "bonus";
+  state.timerPhase = phase;
+  bar.dataset.phase = phase;
+  if (handMin && handSec) {
+    const cx = 24, cy = 26;
+    // 分針：3 分鐘轉一圈
+    const minAngle = (elapsed / TIMER_LIMIT_MS) * Math.PI * 2 - Math.PI / 2;
+    const mr = 13;
+    handMin.setAttribute("x2", (cx + Math.cos(minAngle) * mr).toFixed(2));
+    handMin.setAttribute("y2", (cy + Math.sin(minAngle) * mr).toFixed(2));
+    // 秒針：每秒轉一格
+    const secAngle = ((elapsed % 60000) / 60000) * Math.PI * 2 - Math.PI / 2;
+    const sr = 16;
+    handSec.setAttribute("x2", (cx + Math.cos(secAngle) * sr).toFixed(2));
+    handSec.setAttribute("y2", (cy + Math.sin(secAngle) * sr).toFixed(2));
+  }
+}
 
 const $ = (id) => document.getElementById(id);
 
@@ -310,12 +374,23 @@ function submitAnswer() {
     return;
   }
   if (val === state.problem.ans) {
+    stopQuestionTimer();
+    const elapsed = getElapsedMs();
+    const timedOut = elapsed >= TIMER_LIMIT_MS;
+    const doubled = !timedOut && elapsed < TIMER_BONUS_MS;
     state.correct++; state.streak++;
-    const bonus = state.streak >= 3 ? 5 : 0;
-    state.score += 10 + bonus;
-    queueBagPoints();
+    let gained;
+    if (timedOut) {
+      gained = 1;
+      state.score += gained;
+    } else {
+      const bonus = state.streak >= 3 ? 5 : 0;
+      gained = (10 + bonus) * (doubled ? 2 : 1);
+      state.score += gained;
+    }
+    queueBagPoints({ doubled, timedOut });
     window.PracticeStore?.recordResult(true, state.type?.id, state.type?.title);
-    showVictory(10 + bonus);
+    showVictory(gained, { doubled, timedOut });
   } else {
     state.wrong++; state.streak = 0;
     state.score = Math.max(0, state.score - 2);
@@ -333,6 +408,7 @@ function newQuestion() {
   resetWorkspace();
   if (eraserOn) setEraser(false);
   showFeedback("", "");
+  startQuestionTimer();
 }
 
 function bindAnswerInput() {
@@ -368,8 +444,12 @@ function updateStats() {
 
 /* ========== 答對動畫 ========== */
 const PRAISES = ["很棒，你超厲害！", "太強了，繼續加油！", "答對了，你是數學小天才！", "厲害！再來一題！", "完美！你做得很好！"];
-function showVictory(points) {
-  $("victorySub").textContent = `+${points} 分 · ${PRAISES[Math.floor(Math.random()*PRAISES.length)]}`;
+function showVictory(points, opts = {}) {
+  const { doubled = false, timedOut = false } = opts;
+  let prefix = "";
+  if (doubled) prefix = "⚡ 2 倍 ";
+  else if (timedOut) prefix = "⏰ 時間到 ";
+  $("victorySub").textContent = `${prefix}+${points} 分 · ${PRAISES[Math.floor(Math.random()*PRAISES.length)]}`;
   document.body.classList.add("celebrating");
   $("victory").classList.add("show");
   updateStats();
@@ -449,6 +529,7 @@ function startGame(type) {
 }
 
 function backToMenu() {
+  stopQuestionTimer();
   $("gameScreen").classList.remove("show");
   $("menuScreen").classList.add("show");
   hideVictory();
@@ -460,10 +541,13 @@ function updateBag() {
   const el = $("pointsBagCount");
   if (el) el.textContent = state.bagPoints;
 }
-function queueBagPoints() {
+function queueBagPoints(opts = {}) {
+  const { doubled = false, timedOut = false } = opts;
+  if (timedOut) return; // 超時答對不發金幣
   // 每答對一題基本 5 點；連對到 5 的倍數加贈 5 點（共 10 點）
-  state.pendingCoins += 5;
-  if (state.streak > 0 && state.streak % 5 === 0) state.pendingBonus += 5;
+  const mul = doubled ? 2 : 1;
+  state.pendingCoins += 5 * mul;
+  if (state.streak > 0 && state.streak % 5 === 0) state.pendingBonus += 5 * mul;
 }
 function flushPendingCoins() {
   const base = state.pendingCoins;
@@ -529,13 +613,24 @@ $("victoryNext").addEventListener("click", () => { hideVictory(); newQuestion();
 $("submitBtn").addEventListener("click", submitAnswer);
 $("debugSkipBtn").addEventListener("click", () => {
   if (!state.problem) return;
+  stopQuestionTimer();
+  const elapsed = getElapsedMs();
+  const timedOut = elapsed >= TIMER_LIMIT_MS;
+  const doubled = !timedOut && elapsed < TIMER_BONUS_MS;
   state.correct++; state.streak++;
-  const bonus = state.streak >= 3 ? 5 : 0;
-  state.score += 10 + bonus;
-  queueBagPoints();
+  let gained;
+  if (timedOut) {
+    gained = 1;
+    state.score += gained;
+  } else {
+    const bonus = state.streak >= 3 ? 5 : 0;
+    gained = (10 + bonus) * (doubled ? 2 : 1);
+    state.score += gained;
+  }
+  queueBagPoints({ doubled, timedOut });
   window.PracticeStore?.recordResult(true, state.type?.id, state.type?.title);
   updateStats();
-  showVictory(10 + bonus);
+  showVictory(gained, { doubled, timedOut });
 });
 $("debugFailBtn").addEventListener("click", () => {
   if (!state.problem) return;
