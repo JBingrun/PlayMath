@@ -889,3 +889,28 @@
   border-color: #7a1c44;
   color: #fff;
 }
+
+/* 物理浮動運算符號 */
+.physics-stage {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+  display: none;
+}
+body.physics-on .physics-stage { display: block; }
+.physics-icon {
+  position: absolute;
+  width: 360px; height: 360px;
+  top: 0; left: 0;
+  pointer-events: auto;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-drag: none;
+  touch-action: none;
+  will-change: transform;
+}
+.physics-icon:active,
+.physics-icon.dragging { cursor: grabbing; }
+.physics-icon img { width: 100%; height: 100%; display: block; object-fit: contain; pointer-events: none; -webkit-user-drag: none; }

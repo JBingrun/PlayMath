@@ -24,13 +24,16 @@
     <button class="install-hint-close" id="installHintClose" title="關閉">✕</button>
   </div>
 
+  <!-- 物理浮動運算符號 (僅選單頁顯示) -->
+  <div class="physics-stage" id="physicsStage" aria-hidden="true"></div>
+
   <!-- 選單頁 -->
   <div class="screen menu show" id="menuScreen">
     <div class="menu-card-wrap">
       <button class="menu-settings-btn" id="menuSettingsBtn" title="設定" aria-label="設定">
         <img src="icons/config.svg" alt="" />
       </button>
-      <h1 class="menu-h1">嗨！數學你好！</h1>
+      <h1 class="menu-h1">哈囉！數學！</h1>
       <p class="menu-sub">選一個題型開始挑戰吧！</p>
       <div class="menu-list" id="menuList">
         <button class="menu-calendar-btn" id="menuCalendarBtn">練習紀錄 →</button>
@@ -178,5 +181,6 @@
 <script src="calendar.js" defer></script>
 <script src="settings.js" defer></script>
 <script src="game.js" defer></script>
+<script src="physics-icons.js" defer></script>
 </body>
 </html>
