@@ -140,7 +140,13 @@ function buildOpTray() {
     p.dataset.type = "op";
     p.textContent = op;
     tray.appendChild(p);
-    p.addEventListener("pointerdown", startPieceDrag);
+    // 除號暫時停用：灰階顯示且不可拖動
+    if (op === "÷") {
+      p.classList.add("disabled");
+      p.setAttribute("aria-disabled", "true");
+    } else {
+      p.addEventListener("pointerdown", startPieceDrag);
+    }
   });
 }
 
