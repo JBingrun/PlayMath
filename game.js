@@ -676,6 +676,12 @@ function eraseSlot(slot) {
     child.classList.add("ready");
     child.style.position = "";
     const area = $("comboArea");
+    // 先移除 spawnNewComboBlock 生出的空佔位塊，避免區內出現兩個組合方塊
+    if (area) {
+      area.querySelectorAll(".combo-block:not(.placed)").forEach((b) => {
+        if (b !== child) b.remove();
+      });
+    }
     if (area && $("comboClear")) area.insertBefore(child, $("comboClear"));
     else if (area) area.appendChild(child);
   }
