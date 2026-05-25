@@ -6,9 +6,31 @@
 
   let viewYear, viewMonth; // month: 0-based
 
+  // 自訂印章 — 對應四個等級（形狀由 icons/shape_N.svg 透過 CSS mask 套用）
+  function stampSvgFor(correct) {
+    if (!correct) return "";
+    let tier;
+    if (correct >= 20) tier = 4;
+    else if (correct >= 10) tier = 3;
+    else if (correct >= 5)  tier = 2;
+    else tier = 1;
+    return `<span class="cal-stamp stamp-tier-${tier}" aria-hidden="true"></span>`;
+  }
+
   function renderCalendar() {
     const store = window.PracticeStore;
-    $("calTitle").textContent = `${viewYear} 年 ${MONTHS_TW[viewMonth]}`;
+    // 副標題 = 月份 + 描述
+    const subtitle = $("calSubtitle");
+    if (subtitle) {
+      subtitle.textContent = `${viewYear} 年 ${MONTHS_TW[viewMonth]} · 紀錄每天練習的過程`;
+    }
+    // 今天按鈕：若不是當月，加上小標示
+    const todayBtn = $("calToday");
+    if (todayBtn) {
+      const now = new Date();
+      const isCurrent = (now.getFullYear() === viewYear && now.getMonth() === viewMonth);
+      todayBtn.textContent = isCurrent ? "今天" : "回今天";
+    }
 
     // 表格
     const grid = $("calGrid");
@@ -55,12 +77,10 @@
     cell.className = "cal-cell";
     if (!inMonth) cell.classList.add("out");
     if (key === todayKey) cell.classList.add("today");
-    if (correct > 0) cell.classList.add("done");
-    const store = window.PracticeStore;
+    if (correct > 0) cell.classList.add("has-practice");
     cell.innerHTML = `
-      <div class="cal-date">${d.getDate()}</div>
-      <div class="cal-stamp">${store.stampFor(correct)}</div>
-      ${correct > 0 ? `<div class="cal-count">${correct} 題</div>` : ""}
+      <span class="cal-date">${d.getDate()}</span>
+      ${stampSvgFor(correct)}
     `;
     grid.appendChild(cell);
   }
@@ -75,12 +95,11 @@
     cell.className = "cal-cell cal-sunday";
     if (!inMonth) cell.classList.add("out");
     if (key === todayKey) cell.classList.add("today");
-    if (correct > 0) cell.classList.add("done");
+    if (correct > 0) cell.classList.add("has-practice");
     cell.title = "點我看本週總結";
     cell.innerHTML = `
-      <div class="cal-date">${d.getDate()}</div>
-      <div class="cal-stamp">${store.stampFor(correct)}</div>
-      ${correct > 0 ? `<div class="cal-count">${correct} 題</div>` : ""}
+      <span class="cal-date">${d.getDate()}</span>
+      ${stampSvgFor(correct)}
     `;
     cell.addEventListener("click", () => {
       const sum = store.weekSummary(weekMonday);
@@ -89,42 +108,99 @@
     grid.appendChild(cell);
   }
 
-  const PIE_COLORS = ["#ff6b9d", "#5c9ce6", "#ffb74d", "#9ccc65", "#ba68c8", "#4dd0e1", "#ffd54f", "#a1887f"];
+  const PIE_COLORS = ["#fdb8dd", "#b9d0f0", "#9eb16f", "#f5d76e", "#c9728b", "#a8c8e6", "#998c75", "#2a1f1c"];
+  // 對應 PIE_COLORS 的深色版本（icon 用，在 bean 上看得清楚但是同色系）
+  const PIE_COLORS_DARK = ["#b9457e", "#4d6e9c", "#5d7240", "#a8862e", "#5a2e3f", "#496481", "#5d543d", "#000000"];
 
-  function buildPieSVG(types, size = 220) {
+  // 題型 → Lucide icon
+  const TOPIC_ICONS = {
+    twoStepPuzzle: "puzzle",
+    diffTimes: "tag",
+    changeBack: "wallet",
+    twoGroupsAdd: "utensils",
+    compareTwoGroups: "scale",
+    timesCompare: "x",
+    clockMinutes: "clock",
+  };
+
+  function buildRingSVG(types, size = 280) {
+    const R = 90;                 // 環半徑
+    const STROKE = 32;            // bean 厚度
+    const GAP_DEG = 25;           // bean 間隙（度）
+    const ICON_R = R;             // icon 在 bean 中央線上
+    const cx = size / 2, cy = size / 2;
+
     const total = types.reduce((s, t) => s + t.total, 0) || 1;
-    const cx = size / 2, cy = size / 2, r = size / 2 - 4;
-    let angle = -Math.PI / 2; // 從 12 點方向開始
-    const paths = types.map((t, i) => {
-      const slice = (t.total / total) * Math.PI * 2;
-      const x1 = cx + r * Math.cos(angle);
-      const y1 = cy + r * Math.sin(angle);
-      const next = angle + slice;
-      const x2 = cx + r * Math.cos(next);
-      const y2 = cy + r * Math.sin(next);
-      const largeArc = slice > Math.PI ? 1 : 0;
-      const color = PIE_COLORS[i % PIE_COLORS.length];
-      let d;
-      if (types.length === 1) {
-        // 單一題型 → 整圓
-        d = `M ${cx - r} ${cy} A ${r} ${r} 0 1 1 ${cx + r} ${cy} A ${r} ${r} 0 1 1 ${cx - r} ${cy} Z`;
-      } else {
-        d = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
-      }
-      // 標籤位置（中點）
-      const midAngle = angle + slice / 2;
-      const labelR = r * 0.62;
-      const lx = cx + labelR * Math.cos(midAngle);
-      const ly = cy + labelR * Math.sin(midAngle);
-      const pct = Math.round((t.total / total) * 100);
-      angle = next;
-      return { d, color, lx, ly, pct, t };
+
+    function polar(deg, r) {
+      const rad = (deg - 90) * Math.PI / 180;
+      return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
+    }
+
+    let cum = 0;
+    // 先算每個 bean 的原始角度比例，再保證每個有 MIN_DEG 寬度（從大的那邊拿）
+    const MIN_DEG = GAP_DEG + 6; // bean 最小可見寬度
+    let raw = types.map((t, i) => ({
+      t,
+      deg: (t.total / total) * 360,
+      color: PIE_COLORS[i % PIE_COLORS.length],
+      iconColor: PIE_COLORS_DARK[i % PIE_COLORS_DARK.length],
+    }));
+    const small = raw.filter(r => r.deg < MIN_DEG);
+    const stolen = small.reduce((s, r) => s + (MIN_DEG - r.deg), 0);
+    small.forEach(r => r.deg = MIN_DEG);
+    const big = raw.filter(r => r.deg > MIN_DEG);
+    const totalBig = big.reduce((s, r) => s + r.deg, 0);
+    if (big.length && stolen > 0 && totalBig > 0) {
+      big.forEach(r => { r.deg -= stolen * (r.deg / totalBig); });
+    }
+
+    const beans = raw.map(r => {
+      const sliceDeg = r.deg;
+      const startDeg = cum + GAP_DEG / 2;
+      const endDeg = cum + sliceDeg - GAP_DEG / 2;
+      cum += sliceDeg;
+      return {
+        startDeg, endDeg,
+        midDeg: (startDeg + endDeg) / 2,
+        color: r.color,
+        iconColor: r.iconColor,
+        sliceDeg, t: r.t,
+      };
     });
-    const slices = paths.map(p => `<path d="${p.d}" fill="${p.color}" stroke="#fff" stroke-width="2"></path>`).join("");
-    const labels = paths.map(p =>
-      p.pct >= 8 ? `<text x="${p.lx}" y="${p.ly}" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="bold" fill="#fff">${p.pct}%</text>` : ""
-    ).join("");
-    return { svg: `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${slices}${labels}</svg>`, paths };
+
+    // 單一題型 → 整圈（避免起終點重疊）
+    const beansHtml = beans.map((b, i) => {
+      if (b.sliceDeg <= GAP_DEG + 0.5) return "";
+      if (beans.length === 1) {
+        // 整圈用兩個半圓避免 startAngle=endAngle
+        const [x1, y1] = polar(0, R);
+        const [x2, y2] = polar(180, R);
+        return `<path d="M ${x1} ${y1} A ${R} ${R} 0 0 1 ${x2} ${y2} A ${R} ${R} 0 0 1 ${x1} ${y1}" stroke="${b.color}" stroke-width="${STROKE}" fill="none"/>`;
+      }
+      const [x1, y1] = polar(b.startDeg, R);
+      const [x2, y2] = polar(b.endDeg, R);
+      const largeArc = (b.endDeg - b.startDeg) > 180 ? 1 : 0;
+      return `<path d="M ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2}" stroke="${b.color}" stroke-width="${STROKE}" stroke-linecap="round" fill="none"/>`;
+    }).join("");
+
+    const svg = `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" class="ring-svg">
+      ${beansHtml}
+      <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="56" font-weight="800" fill="#070401" font-variant-numeric="tabular-nums">${total}</text>
+      <text x="${cx}" y="${cy + 36}" text-anchor="middle" font-size="13" fill="#998c75" font-weight="600">本週練習題數</text>
+    </svg>`;
+
+    // 環外側的 icon 浮層（絕對定位 HTML，方便用 Lucide）
+    const iconsHtml = beans.map(b => {
+      if (b.sliceDeg <= GAP_DEG + 0.5) return "";
+      const iconName = TOPIC_ICONS[b.t.id] || "circle";
+      const [ix, iy] = polar(b.midDeg, ICON_R);
+      return `<div class="ring-icon-wrap" style="left:${ix}px;top:${iy}px;color:${b.iconColor};" title="${escapeHtml(b.t.title)}">
+        <i data-lucide="${iconName}"></i>
+      </div>`;
+    }).join("");
+
+    return { svg, iconsHtml: "", paths: beans, size };
   }
 
   function fmtDate(d) {
@@ -134,6 +210,38 @@
   function openWeekSummaryModal(weekMonday, sum) {
     const weekSunday = new Date(weekMonday);
     weekSunday.setDate(weekMonday.getDate() + 6);
+
+    let overlay = document.getElementById("weekModalOverlay");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "weekModalOverlay";
+      overlay.className = "week-modal-overlay";
+      document.body.appendChild(overlay);
+    }
+
+    // 若本週完全沒練習 → 顯示空狀態訊息
+    const isEmpty = (sum.totalCorrect + sum.totalWrong) === 0;
+    if (isEmpty) {
+      overlay.innerHTML = `
+        <div class="week-modal" role="dialog" aria-modal="true">
+          <button type="button" class="week-modal-close" aria-label="關閉">✕</button>
+          <h3 class="week-modal-title">本週練習總結</h3>
+          <div class="week-modal-range">${fmtDate(weekMonday)} ~ ${fmtDate(weekSunday)}</div>
+          <div class="week-modal-empty">
+            <i data-lucide="moon" class="empty-icon"></i>
+            <div class="empty-title">本週還沒有練習紀錄</div>
+            <div class="empty-sub">挑一個題型開始練習吧</div>
+          </div>
+        </div>
+      `;
+      overlay.classList.add("show");
+      if (window.lucide?.createIcons) window.lucide.createIcons();
+      const close = () => overlay.classList.remove("show");
+      overlay.querySelector(".week-modal-close").addEventListener("click", close);
+      overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+      return;
+    }
+
     // 若該週沒有題型細節（舊資料），fallback 顯示答對/答錯比例
     let pieData = sum.types;
     let legacy = false;
@@ -148,8 +256,8 @@
     const sorted = pieData.slice().sort((a, b) =>
       (b.wrong - a.wrong) || (b.total - a.total)
     );
-    // 圓餅圖（依排序後順序配色，與長條圖色塊對應）
-    const { svg, paths } = buildPieSVG(sorted);
+    // 環狀圖（依排序後順序配色，與長條圖色塊對應）
+    const { svg, iconsHtml, paths, size: ringSize } = buildRingSVG(sorted);
     const colorByTitle = {};
     paths.forEach(p => { colorByTitle[p.t.title] = p.color; });
     const pieLegendHtml = paths.map(p => {
@@ -179,27 +287,19 @@
             <span class="bc-rate">正確率 ${rate}%</span>
           </span>
         </div>
-        <div class="bar-track" style="width:${barWidthPct}%">
+        <div class="bar-track">
           <div class="bar-seg bar-correct" style="width:${correctPct}%" title="答對 ${t.correct}"></div>
           <div class="bar-seg bar-wrong" style="width:${wrongPct}%" title="答錯 ${t.wrong}"></div>
-          ${t.wrong > 0 && wrongPct >= 12 ? `<span class="bar-err-label">失誤 ${errRate}%</span>` : ""}
         </div>
       </div>`;
     }).join("");
     const legacyNote = legacy
-      ? `<div class="week-modal-legacy">ℹ️ 這週的紀錄是舊版本留下的，沒有題型細節。之後練習就會看到各題型佔比。</div>`
+      ? `<div class="week-modal-legacy"><i data-lucide="info" class="hint-icon"></i>這週的紀錄是舊版本留下的，沒有題型細節。之後練習就會看到各題型佔比。</div>`
       : "";
     const suggestHtml = sum.suggest
-      ? `<div class="week-modal-suggest">💡 建議加強：<b>${escapeHtml(sum.suggest.title)}</b>　失誤率 ${Math.round(sum.suggest.errorRate * 100)}%（${sum.suggest.wrong}/${sum.suggest.total} 題）</div>`
-      : `<div class="week-modal-suggest ok">🎉 本週表現不錯，繼續保持！</div>`;
+      ? `<div class="week-modal-suggest"><i data-lucide="lightbulb" class="hint-icon"></i>建議加強：<b>${escapeHtml(sum.suggest.title)}</b></div>`
+      : `<div class="week-modal-suggest ok"><i data-lucide="party-popper" class="hint-icon"></i>本週表現不錯，繼續保持！</div>`;
 
-    let overlay = document.getElementById("weekModalOverlay");
-    if (!overlay) {
-      overlay = document.createElement("div");
-      overlay.id = "weekModalOverlay";
-      overlay.className = "week-modal-overlay";
-      document.body.appendChild(overlay);
-    }
     overlay.innerHTML = `
       <div class="week-modal" role="dialog" aria-modal="true">
         <button type="button" class="week-modal-close" aria-label="關閉">✕</button>
@@ -207,14 +307,19 @@
         <div class="week-modal-range">${fmtDate(weekMonday)} ~ ${fmtDate(weekSunday)}</div>
         <div class="week-modal-overview">練習 ${sum.practicedDays} 天 · 答對 ${sum.totalCorrect} 題 · 答錯 ${sum.totalWrong} 題</div>
         <div class="week-modal-body">
-          <div class="week-modal-pie">${svg}</div>
+          <div class="week-modal-pie">
+            <div class="ring-wrap" style="width:${ringSize}px;height:${ringSize}px">
+              ${svg}
+              ${iconsHtml}
+            </div>
+          </div>
           <div class="week-modal-legend">${pieLegendHtml}</div>
         </div>
         <div class="week-modal-section-title">各題型答對 / 答錯</div>
         <div class="week-modal-legend-tips">
           <span class="tip-item"><span class="tip-swatch tip-correct"></span>答對</span>
           <span class="tip-item"><span class="tip-swatch tip-wrong"></span>答錯</span>
-          <span class="tip-note">長條長度 = 練習題數，紅色越長代表失誤越多</span>
+          <span class="tip-note">長條顯示此題型的答對 / 答錯比例</span>
         </div>
         <div class="week-modal-bars">${barsHtml}</div>
         ${legacyNote}
@@ -222,6 +327,7 @@
       </div>
     `;
     overlay.classList.add("show");
+    if (window.lucide?.createIcons) window.lucide.createIcons();
     const close = () => overlay.classList.remove("show");
     overlay.querySelector(".week-modal-close").addEventListener("click", close);
     overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });

@@ -36,28 +36,37 @@
       <h1 class="menu-h1">哈囉！數學！</h1>
       <p class="menu-sub">選一個題型開始挑戰吧！</p>
       <div class="menu-list" id="menuList">
-        <button class="menu-calendar-btn" id="menuCalendarBtn">練習紀錄 →</button>
+        <button class="menu-calendar-btn" id="menuCalendarBtn" style="line-height: 2.5">練習紀錄 →</button>
       </div>
     </div>
   </div>
 
   <!-- 日曆頁 -->
   <div class="screen calendar-screen" id="calendarScreen">
+    <!-- 緩慢旋轉的背景形狀 -->
+    <img class="cal-blob" src="icons/shape_4.svg" alt="" aria-hidden="true">
+
     <div class="cal-wrap">
-      <div class="cal-header">
-        <button class="back-btn" id="calBack">← 選單</button>
-        <h2 id="calTitle">—</h2>
+      <div class="cal-topbar">
+        <button class="pill-btn pill-back" id="calBack" style="font-weight: 700; padding: 12px 22px">← 首頁</button>
         <div class="cal-nav">
-          <button id="calPrev" title="上個月">‹</button>
-          <button id="calToday">今天</button>
-          <button id="calNext" title="下個月">›</button>
+          <button class="pill-btn pill-icon" id="calPrev" title="上個月" aria-label="上個月" style="width: 43px; height: 43px">←</button>
+          <button class="pill-btn pill-today" id="calToday" style="height: 44px">今天</button>
+          <button class="pill-btn pill-icon" id="calNext" title="下個月" aria-label="下個月" style="width: 43px; height: 43px">→</button>
         </div>
       </div>
+
+      <h1 class="cal-title">學習紀錄</h1>
+      <p class="cal-subtitle" id="calSubtitle">紀錄每天練習的過程</p>
 
       <div class="cal-grid" id="calGrid"></div>
 
       <div class="cal-legend">
-        每天答對越多，章越大：🌱 1–4 題　🌿 5–9 題　🌳 10–19 題　🏆 20 題以上
+        <span class="cal-legend-lead">題數：</span>
+        <span class="cal-legend-item"><span>1-4 題</span><span class="stamp-mini stamp-tier-1"></span></span>
+        <span class="cal-legend-item"><span>5-9 題</span><span class="stamp-mini stamp-tier-2"></span></span>
+        <span class="cal-legend-item"><span>10-19 題</span><span class="stamp-mini stamp-tier-3"></span></span>
+        <span class="cal-legend-item"><span>20 題以上</span><span class="stamp-mini stamp-tier-4"></span></span>
       </div>
 
     </div>
@@ -65,96 +74,89 @@
 
   <!-- 設定頁（家長使用） -->
   <div class="screen settings-screen" id="settingsScreen">
+    <!-- 緩慢旋轉的背景形狀 -->
+    <img class="settings-blob" src="icons/shape_3.svg" alt="" aria-hidden="true">
+
     <div class="settings-wrap">
-      <div class="settings-header">
-        <button class="back-btn" id="settingsBack">← 選單</button>
-        <h2>⚙️ 設定</h2>
+      <div class="settings-topbar">
+        <button class="pill-btn pill-back" id="settingsBack">← 首頁</button>
       </div>
-      <div class="settings-section">
-        <h3>📦 練習紀錄備份</h3>
+
+      <h1 class="settings-title">設定</h1>
+      <p class="settings-subtitle">App 偏好與練習紀錄備份</p>
+
+      <section class="settings-section">
+        <h3 class="settings-section-title">練習紀錄備份</h3>
         <p class="settings-hint">建議定期匯出存到 iCloud Drive 當備份。在 iPad 上可從不同裝置匯入紀錄。</p>
         <div class="cal-backup">
-          <button id="calExport" class="cal-backup-btn">⬇️ 匯出 JSON 備份</button>
-          <label class="cal-backup-btn" for="calImportFile">⬆️ 匯入 JSON</label>
+          <button id="calExport" class="settings-action-btn">⬇ 匯出 JSON 備份</button>
+          <label class="settings-action-btn" for="calImportFile">⬆ 匯入 JSON</label>
           <input type="file" id="calImportFile" accept="application/json,.json" hidden />
         </div>
-      </div>
+      </section>
     </div>
   </div>
 
   <!-- 遊戲頁 -->
   <div class="screen game-screen" id="gameScreen">
     <div class="game">
-      <div class="game-header">
-        <button class="back-btn" id="backBtn" title="回到選單">← 選單</button>
-        <h1 id="gameTitle">🧩 二步驟運算拼圖</h1>
-        <div class="points-bag" id="pointsBag" title="點數收集袋">
-          <div class="points-bag-icon">💰</div>
+      <div class="game-topbar">
+        <button class="topbar-back" id="backBtn" title="回到選單" style="height: 41px; font-size: 17px">← 選單</button>
+        <div class="timer-bar" id="timerBar" data-phase="bonus" style="height: 41px">
+          <div class="timer-icon" id="timerIcon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="44" height="44">
+              <circle cx="24" cy="24" r="18" fill="none" stroke="#faf5e1" stroke-width="5"/>
+              <line id="timerHandMin" x1="24" y1="24" x2="24" y2="16" stroke="#faf5e1" stroke-width="5" stroke-linecap="round"/>
+              <line id="timerHandSec" x1="24" y1="24" x2="35" y2="24" stroke="#faf5e1" stroke-width="5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="timer-track" style="border-radius: 30px; border-style: none">
+            <div class="timer-fill" id="timerFill"></div>
+            <div class="timer-text" id="timerText">3:00</div>
+          </div>
+        </div>
+        <div class="topbar-stats" style="height: 41px">
+          <div class="topbar-stat"><span class="topbar-stat-label">答對</span><span id="correctCount">0</span></div>
+          <div class="topbar-stat"><span class="topbar-stat-label">答錯</span><span id="wrongCount">0</span></div>
+          <div class="topbar-stat"><span class="topbar-stat-label">連對</span><span id="streak">0</span></div>
+        </div>
+        <div class="topbar-points" id="pointsBag" title="點數收集袋" style="height: 41px">
+          <img class="points-bag-icon" src="icons/shape_4.svg" alt="" aria-hidden="true">
           <div class="points-bag-count" id="pointsBagCount">0</div>
         </div>
       </div>
 
-      <div class="stats">
-        <div>答對<span id="correctCount">0</span></div>
-        <div>答錯<span id="wrongCount">0</span></div>
-        <div>得分<span id="score">0</span></div>
-        <div>🔥連對<span id="streak">0</span></div>
-      </div>
-
       <div class="layout">
         <div class="col-left">
-          <div class="question-box">
-            <span class="label">題目</span><span id="questionText">準備好了嗎？</span>
+          <div class="question-box" style="border-width: 0px; border-style: solid">
+            <span id="questionText" style="font-size: 31px; font-weight: 900; line-height: 1.2">準備好了嗎？</span>
           </div>
 
-          <div class="section-title">① 把數字和符號拖到算式中：</div>
+          <div class="section-title">把數字和符號拖到算式中：</div>
           <div class="equation" id="equation"></div>
 
-          <div class="feedback" id="feedback"></div>
-
-          <div class="timer-bar" id="timerBar" data-phase="bonus">
-            <div class="timer-icon" id="timerIcon" aria-hidden="true">
-              <svg viewBox="0 0 48 48" width="44" height="44">
-                <circle cx="24" cy="26" r="18" fill="#fff3c4" stroke="#c0392b" stroke-width="2.5"/>
-                <g stroke="#5d3a1a" stroke-width="1.6" stroke-linecap="round" font-family="serif" font-size="6" fill="#5d3a1a" text-anchor="middle">
-                  <text x="24" y="14.5">12</text>
-                  <text x="36.5" y="28">3</text>
-                  <text x="24" y="41.5">6</text>
-                  <text x="11.5" y="28">9</text>
-                </g>
-                <line id="timerHandMin" x1="24" y1="26" x2="24" y2="13" stroke="#222" stroke-width="2.4" stroke-linecap="round"/>
-                <line id="timerHandSec" x1="24" y1="26" x2="33" y2="26" stroke="#c0392b" stroke-width="1.6" stroke-linecap="round"/>
-                <circle cx="24" cy="26" r="2" fill="#222"/>
-              </svg>
-            </div>
-            <div class="timer-track">
-              <div class="timer-fill" id="timerFill"></div>
-              <div class="timer-text" id="timerText">3:00</div>
-            </div>
-          </div>
+          <div class="feedback" id="feedback" style="color: rgb(182, 58, 128)"></div>
         </div>
 
         <div class="col-right">
-          <div class="section-title">② 組合方塊（組兩位數時把數字一個一個拖進來，再把整塊拖到算式裡）：</div>
-          <div class="combo-area" id="comboArea">
+          <div class="section-title">組合方塊（組兩位數時把數字一個一個拖進來，再把整塊拖到算式裡）：</div>
+          <div class="combo-area" id="comboArea" style="opacity: 1">
             <span class="combo-label">組合方塊：</span>
             <div class="combo-block empty" id="comboBlock" data-digits=""></div>
             <button class="combo-clear" id="comboClear" title="清除">✕</button>
           </div>
 
-          <div class="section-title">③ 數字拼塊（0～9 可重複使用）：</div>
+          <div class="section-title">數字拼塊（0～9 可重複使用）：</div>
           <div class="tray digit-tray" id="digitTray"></div>
 
-          <div class="section-title">④ 運算符號（+ − × ÷ 選對的拖過去）：</div>
+          <div class="section-title">運算符號（+ − × ÷ 選對的拖過去）：</div>
           <div class="tray op-tray" id="opTray"></div>
 
           <div class="action-row">
-            <button class="eraser-btn" id="eraserBtn" title="點一下開啟，再點算式裡的格子可以清掉">🧽 橡皮擦</button>
-            <button class="btn secondary" id="resetBtn">重新開始</button>
+            <button class="eraser-btn" id="eraserBtn" title="點一下開啟，再點算式裡的格子可以清掉" style="background-color: rgba(182, 58, 128, 0); border-color: rgb(182, 58, 128); color: rgb(182, 58, 128); border-width: 3px"><i data-lucide="eraser" class="btn-icon"></i>橡皮擦</button>
             <button class="btn primary" id="submitBtn">送出答案</button>
             <button class="btn debug-skip" id="debugSkipBtn" title="Debug：直接通關此題">⚡ 快速通關</button>
             <button class="btn debug-fail" id="debugFailBtn" title="Debug：直接記為失敗">💥 快速失敗</button>
-            <button class="btn secondary" id="nextBtn">換一題</button>
           </div>
         </div>
       </div>
@@ -163,14 +165,17 @@
 
   <div class="victory" id="victory">
     <div class="victory-card">
-      <div class="victory-emoji">🎉</div>
+      <i data-lucide="party-popper" class="victory-icon"></i>
       <div class="victory-title">答對了！</div>
       <div class="victory-sub" id="victorySub">很棒，你超厲害！</div>
       <button class="victory-next" id="victoryNext">下一題 →</button>
     </div>
   </div>
+<script src="https://unpkg.com/lucide@latest" defer></script>
 <script src="install-hint.js" defer></script>
 <script src="storage.js" defer></script>
+<script src="dashed-borders.js" defer></script>
+<script src="problems/_stepBuilder.js" defer></script>
 <script src="problems/twoStepPuzzle.js" defer></script>
 <script src="problems/diffTimes.js" defer></script>
 <script src="problems/changeBack.js" defer></script>
@@ -184,3 +189,15 @@
 <script src="physics-icons.js" defer></script>
 </body>
 </html>
+
+<style id="__om-edit-overrides">
+#menuList >button:nth-child(3) { border-width: 0px !important }
+#comboArea >:is(button,input,textarea) { color: rgb(185, 208, 240) !important }
+#comboArea >:is(button,input,textarea) { font-weight: 900 !important }
+#weekModalOverlay :is(h1,h2,h3,h4,h5,h6) { font-size: 42px !important }
+#weekModalOverlay >[role="dialog"] >.week-modal-suggest { line-height: 1 !important }
+#weekModalOverlay >[role="dialog"] >.week-modal-suggest { font-size: 25px !important }
+#weekModalOverlay >[role="dialog"] >.week-modal-legacy { font-size: 15px !important }
+#weekModalOverlay >[role="dialog"] >.week-modal-legacy { font-family: Inter !important }
+#calGrid >.today { background-color: rgb(98, 110, 211) !important }
+</style>

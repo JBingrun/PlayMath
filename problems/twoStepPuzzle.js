@@ -58,40 +58,9 @@ function make() {
 function buildEquation(eqEl, problem) {
   eqEl.innerHTML = "";
   const { a, b, c, sign, product } = problem;
-
-  const s1 = document.createElement("div");
-  s1.className = "step";
-  s1.innerHTML = `
-    <div class="step-label">步驟1</div>
-    <div class="eq-line">
-      <div class="slot num" data-expected="${b}"></div>
-      <div class="slot op" data-expected="×"></div>
-      <div class="slot num" data-expected="${a}"></div>
-    </div>
-    <hr class="eq-divider">
-    <div class="eq-line">
-      <div class="eq-equal">=</div>
-      <div class="slot num" data-expected="${product}"></div>
-    </div>
-  `;
-  eqEl.appendChild(s1);
-
-  const s2 = document.createElement("div");
-  s2.className = "step";
-  s2.innerHTML = `
-    <div class="step-label">步驟2</div>
-    <div class="eq-line">
-      <div class="slot num" data-expected="${product}"></div>
-      <div class="slot op" data-expected="${sign}"></div>
-      <div class="slot num" data-expected="${c}"></div>
-    </div>
-    <hr class="eq-divider">
-    <div class="eq-line">
-      <div class="eq-equal">=</div>
-      <input type="number" inputmode="numeric" class="answer-input" id="answer" placeholder="?" disabled />
-    </div>
-  `;
-  eqEl.appendChild(s2);
+  eqEl.appendChild(PlayMath.buildStep({ label: "步驟1", a: b, op: "×", b: a, result: product }));
+  eqEl.appendChild(PlayMath.buildStep({ label: "步驟2", a: product, op: sign, b: c, isAnswer: true }));
+  PlayMath.bindStepFlips(eqEl);
 }
 
 window.PROBLEM_TYPES = window.PROBLEM_TYPES || [];

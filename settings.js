@@ -26,7 +26,7 @@
 
   // 隱藏的 debug 區塊：標題連點 5 下開啟
   function setupDebugTap() {
-    const title = document.querySelector("#settingsScreen .settings-header h2");
+    const title = document.querySelector("#settingsScreen .settings-title");
     if (!title) return;
     title.style.cursor = "pointer";
     title.style.userSelect = "none";
@@ -56,11 +56,11 @@
     section.id = "debugSection";
     section.className = "settings-section debug-section";
     section.innerHTML = `
-      <h3>🛠 Debug 工具</h3>
+      <h3 class="settings-section-title">🛠 Debug 工具</h3>
       <p class="settings-hint">這個區塊是給開發者用的，請小心使用。</p>
       <div class="cal-backup">
-        <button id="debugClearAll" class="cal-backup-btn debug-danger">🗑 清除所有練習紀錄</button>
-        <button id="debugOff" class="cal-backup-btn">停用 Debug 模式</button>
+        <button id="debugClearAll" class="settings-action-btn debug-danger">🗑 清除所有練習紀錄</button>
+        <button id="debugOff" class="settings-action-btn">停用 Debug 模式</button>
       </div>
     `;
     wrap.appendChild(section);

@@ -43,57 +43,10 @@ function make() {
 function buildEquation(eqEl, problem) {
   eqEl.innerHTML = "";
   const { a, b, c, p1, p2 } = problem;
-
-  const s1 = document.createElement("div");
-  s1.className = "step";
-  s1.innerHTML = `
-    <div class="step-label">步驟1</div>
-    <div class="eq-line">
-      <div class="slot num" data-expected="${a}"></div>
-      <div class="slot op" data-expected="×"></div>
-      <div class="slot num" data-expected="${b}"></div>
-    </div>
-    <hr class="eq-divider">
-    <div class="eq-line">
-      <div class="eq-equal">=</div>
-      <div class="slot num" data-expected="${p1}"></div>
-    </div>
-  `;
-  eqEl.appendChild(s1);
-
-  const s2 = document.createElement("div");
-  s2.className = "step";
-  s2.innerHTML = `
-    <div class="step-label">步驟2</div>
-    <div class="eq-line">
-      <div class="slot num" data-expected="${c}"></div>
-      <div class="slot op" data-expected="×"></div>
-      <div class="slot num" data-expected="${b}"></div>
-    </div>
-    <hr class="eq-divider">
-    <div class="eq-line">
-      <div class="eq-equal">=</div>
-      <div class="slot num" data-expected="${p2}"></div>
-    </div>
-  `;
-  eqEl.appendChild(s2);
-
-  const s3 = document.createElement("div");
-  s3.className = "step";
-  s3.innerHTML = `
-    <div class="step-label">步驟3</div>
-    <div class="eq-line">
-      <div class="slot num" data-expected="${p1}"></div>
-      <div class="slot op" data-expected="+"></div>
-      <div class="slot num" data-expected="${p2}"></div>
-    </div>
-    <hr class="eq-divider">
-    <div class="eq-line">
-      <div class="eq-equal">=</div>
-      <input type="number" inputmode="numeric" class="answer-input" id="answer" placeholder="?" disabled />
-    </div>
-  `;
-  eqEl.appendChild(s3);
+  eqEl.appendChild(PlayMath.buildStep({ label: "步驟1", a, op: "×", b, result: p1 }));
+  eqEl.appendChild(PlayMath.buildStep({ label: "步驟2", a: c, op: "×", b, result: p2 }));
+  eqEl.appendChild(PlayMath.buildStep({ label: "步驟3", a: p1, op: "+", b: p2, isAnswer: true }));
+  PlayMath.bindStepFlips(eqEl);
 }
 
 window.PROBLEM_TYPES = window.PROBLEM_TYPES || [];
